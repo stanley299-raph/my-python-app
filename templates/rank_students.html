@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rank Students</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px; }
+        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 800px; margin: 0 auto; }
+        h1 { text-align: center; margin-bottom: 20px; }
+        .student { border-bottom: 1px solid #ccc; padding: 10px 0; }
+        a { text-decoration: none; color: #007bff; display: block; text-align: center; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Rank Students</h1>
+        {% if ranked %}
+            <form method="get" style="margin-bottom:10px;display:flex;gap:8px;align-items:center;">
+                <label>Class: <input type="text" name="class" value="{{ class_filter }}" placeholder="e.g. SS2"></label>
+                <button type="submit">Filter</button>
+                <a href="{{ url_for('rank_students_route') }}" style="margin-left:8px;">Clear</a>
+                <div style="margin-left:auto">
+                    <a href="{{ url_for('export_rank_csv') }}?class={{ class_filter }}">Export Rank CSV</a> |
+                    <a href="{{ url_for('export_rank_xlsx') }}?class={{ class_filter }}">Export Rank XLSX</a>
+                </div>
+            </form>
+
+            {% for class_name, students_list in ranked.items() %}
+                <div class="class-section">
+                    <div class="class-title">{{ class_name }}</div>
+                    {% for student in students_list %}
+                        <div class="student">
+                            {{ loop.index }}. {{ student.first_name }} - {{ student.student_id }} - {{ student.average_marks }}% ({{ student.Grade }})
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No students to rank.</p>
+        {% endif %}
+        <a href="{{ url_for('menu') }}">Back to Menu</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Student</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); width: 600px; }
+        h1 { text-align: center; margin-bottom: 20px; }
+        form { display: flex; margin-bottom: 20px; }
+        input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px 0 0 4px; }
+        button { padding: 10px; background: #007bff; color: white; border: none; border-radius: 0 4px 4px 0; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .student { margin-top: 20px; }
+        .student p { margin: 5px 0; }
+        a { text-decoration: none; color: #007bff; display: block; text-align: center; margin-top: 20px; }
+        .flash { margin-bottom: 15px; padding: 10px; border-radius: 4px; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Search Student</h1>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <form method="post">
+            <input type="text" name="student_id" placeholder="Enter Student ID" required>
+            <button type="submit">Search</button>
+        </form>
+        {% if student %}
+            <div class="student">
+                <h2>Student Found!</h2>
+                <p>Name: {{ student.first_name }}</p>
+                <p>Student ID: {{ student.student_id }}</p>
+                <p>Class: {{ student.class_name }}</p>
+                <p>Subjects: {{ student.subjects.keys() | join(', ') }}</p>
+                <p>Total Score: {{ student.total_marks }}</p>
+                <p>Average: {{ student.average_marks }}/100</p>
+                <p>Grade: {{ student.Grade }}</p>
+                <p>Status: {{ student.Status }}</p>
+                <h3>Subject Breakdown:</h3>
+                {% for subject, scores in student.subjects.items() %}
+                    <p>{{ subject }}: Tests {{ scores.tests }}/30 | Exam {{ scores.exam }}/70 | Total {{ scores.total }}/100</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+        <a href="{{ url_for('menu') }}">Back to Menu</a>
+    </div>
+</body>
+</html>

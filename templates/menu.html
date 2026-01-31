@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Score Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container fade-in">
+        <h1>Student Score Management System</h1>
+        <div class="nav-links">
+            <a href="{{ url_for('add_student') }}" class="btn">Add Student Results</a>
+            <a href="{{ url_for('view_students') }}" class="btn">View Student Results</a>
+            <a href="{{ url_for('edit_student') }}" class="btn">Edit Student</a>
+            <a href="{{ url_for('delete_student') }}" class="btn">Delete Student</a>
+            <a href="{{ url_for('search_student') }}" class="btn">Search Student</a>
+            <a href="{{ url_for('rank_students_route') }}" class="btn">Rank Students</a>
+            <a href="{{ url_for('all_students_report') }}" class="btn">Print All Students Report</a>
+            <a href="{{ url_for('export_csv') }}" class="btn">Export Summary CSV</a>
+            <a href="{{ url_for('export_detailed_csv') }}" class="btn">Export Detailed CSV</a>
+            <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Report - {{ student.first_name }} ({{ student.student_id }})</title>
+    <style>
+        body{font-family:Segoe UI,Arial,sans-serif;margin:20px;color:#333}
+        h1{margin-bottom:6px}
+        .meta{margin-bottom:20px}
+        table{width:100%;border-collapse:collapse}
+        th,td{border:1px solid #ddd;padding:8px;text-align:center}
+        th{background:#f8f9fa}
+        .right{text-align:right}
+        .print-btn{position:fixed;right:20px;top:20px}
+    </style>
+</head>
+<body>
+    <button class="print-btn" onclick="window.print()">Print</button>
+    <h1>Report for {{ student.first_name }} ({{ student.student_id }})</h1>
+    <div class="meta">
+        <strong>Class:</strong> {{ student.class_name }} &nbsp; | &nbsp;
+        <strong>Subjects:</strong> {{ student.number_of_subject }}
+    </div>
+
+    {% if position %}
+        <div style="margin-top:6px;font-weight:600;">Position: {{ position.pos }} out of {{ position.size }} in class {{ position.class }}</div>
+    {% endif %}
+
+    <table>
+        <thead>
+            <tr>
+                <th>Subject</th>
+                <th>Test 1 /10</th>
+                <th>Test 2 /10</th>
+                <th>Test 3 /10</th>
+                <th>Total Tests /30</th>
+                <th>CBT /30</th>
+                <th>Theory /40</th>
+                <th>Total Exam /70</th>
+                <th>Overall Mark /100</th>
+                <th>Grade</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for subject, s in student.subjects.items() %}
+            {% set tests = s.tests if s.tests is iterable and s.tests|length == 3 else [] %}
+            <tr>
+                <td>{{ subject }}</td>
+                <td>{{ tests[0] if tests else (s.get('tests') if s.get('tests') is not iterable else '') }}</td>
+                <td>{{ tests[1] if tests else '' }}</td>
+                <td>{{ tests[2] if tests else '' }}</td>
+                <td>{{ s.get('total_test', s.get('tests', '')) }}</td>
+                <td>{{ s.get('cbt', '') }}</td>
+                <td>{{ s.get('theory_exam', s.get('exam', '')) }}</td>
+                <td>{{ s.get('total_exam', s.get('exam', '')) }}</td>
+                <td>{{ s.get('overall_mark', s.get('total', '')) }}</td>
+                <td>{{ s.get('grade', '') }}</td>
+                <td>{{ s.get('status', '') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <th colspan="8" class="right">Average per subject</th>
+                <th>{{ student.average_marks }}</th>
+                <th>{{ student.Grade }}</th>
+                <th>{{ student.Status }}</th>
+            </tr>
+        </tfoot>
+    </table>
+
+    <p class="right"><a href="{{ url_for('view_students') }}">Back to students</a></p>
+</body>
+</html>

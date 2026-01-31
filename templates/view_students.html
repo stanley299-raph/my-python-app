@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Student Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container fade-in">
+        <h1>View Student Results</h1>
+        {% if students %}
+            {% for student in students %}
+                <div class="student card">
+                    <h3>Student {{ loop.index }} — {{ student.first_name }} ({{ student.student_id }})</h3>
+                    <p><strong>Class:</strong> {{ student.class_name }}</p>
+                    <p><strong>Subjects:</strong> {{ student.subjects.keys() | join(', ') }}</p>
+                    <p><strong>Average:</strong> {{ "%.2f"|format(student.average_marks) }}/100</p>
+                    <p><strong>Grade:</strong> {{ student.Grade }}</p>
+                    <p><strong>Status:</strong> {{ student.Status }}</p>
+                    <p>
+                        <a href="{{ url_for('student_report', student_id=student.student_id) }}" class="btn">View Report</a>
+                    </p>
+                </div>
+            {% endfor %}
+            <div class="nav-links">
+                <a href="{{ url_for('all_students_report') }}" class="btn">Print All Students Report</a>
+                <a href="{{ url_for('export_csv') }}" class="btn">Export Summary CSV</a>
+                <a href="{{ url_for('export_detailed_csv') }}" class="btn">Export Detailed CSV</a>
+            </div>
+        {% else %}
+            <p>No student results yet.</p>
+        {% endif %}
+        <div class="nav-links">
+            <a href="{{ url_for('menu') }}" class="btn">Back to Menu</a>
+        </div>
+    </div>
+</body>
+</html>

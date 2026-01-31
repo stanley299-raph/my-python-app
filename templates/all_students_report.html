@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>All Students Report</title>
+    <style>
+        body{font-family:Segoe UI,Arial,sans-serif;margin:20px;color:#333}
+        h1{margin-bottom:6px}
+        .meta{margin-bottom:20px}
+        table{width:100%;border-collapse:collapse;font-size:14px}
+        th,td{border:1px solid #ddd;padding:6px;text-align:center}
+        th{background:#f8f9fa}
+        .right{text-align:right}
+        .print-btn{position:fixed;right:20px;top:20px}
+        @media print{
+            .print-btn, a { display: none !important; }
+            tr { page-break-inside: avoid; }
+        }
+        .student-block{margin-bottom:18px}
+        .student-block h2{margin:6px 0}
+    </style>
+</head>
+<body>
+    <button class="print-btn" onclick="window.print()">Print</button>
+    <h1>All Students Report</h1>
+    <p class="meta">Generated at: {{ now }}</p>
+
+    <form method="get" style="margin-bottom:12px;display:flex;gap:10px;align-items:center;">
+        <label>Class: <input type="text" name="class" value="{{ class_filter }}" placeholder="e.g. SS2"></label>
+        <label>Student ID: <input type="text" name="student_id" value="{{ student_id_filter }}" placeholder="e.g. 21/1/520"></label>
+        <button type="submit">Filter</button>
+        <a href="{{ url_for('all_students_report') }}" style="margin-left:8px;">Clear</a>
+        <div style="margin-left:auto">
+            <a href="{{ url_for('export_csv') }}?class={{ class_filter }}&student_id={{ student_id_filter }}">Export Summary CSV (filtered)</a> |
+            <a href="{{ url_for('export_detailed_csv') }}?class={{ class_filter }}&student_id={{ student_id_filter }}">Export Detailed CSV (filtered)</a>
+        </div>
+    </form>
+
+    {% for student in students %}
+    <div class="student-block">
+        {% set p = positions.get(student.student_id) %}
+    <h2>{{ student.first_name }} ({{ student.student_id }}) — Class: {{ student.class_name }}{% if p %} — Rank: {{ p.pos }}/{{ p.size }}{% endif %}</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Test1</th>
+                    <th>Test2</th>
+                    <th>Test3</th>
+                    <th>Total Tests</th>
+                    <th>CBT</th>
+                    <th>Theory</th>
+                    <th>Total Exam</th>
+                    <th>Overall</th>
+                    <th>Grade</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for subj, s in student.subjects.items() %}
+                <tr>
+                    {% set t = s.tests if s.tests is iterable and s.tests|length == 3 else [] %}
+                    <td>{{ subj }}</td>
+                    <td>{{ t[0] if t else '' }}</td>
+                    <td>{{ t[1] if t else '' }}</td>
+                    <td>{{ t[2] if t else '' }}</td>
+                    <td>{{ s.get('total_test', s.get('tests','')) }}</td>
+                    <td>{{ s.get('cbt','') }}</td>
+                    <td>{{ s.get('theory_exam', s.get('exam','')) }}</td>
+                    <td>{{ s.get('total_exam', s.get('exam','')) }}</td>
+                    <td>{{ s.get('overall_mark', s.get('total','')) }}</td>
+                    <td>{{ s.get('grade','') }}</td>
+                    <td>{{ s.get('status','') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="8" class="right">Average per subject</th>
+                    <th>{{ student.average_marks }}</th>
+                    <th>{{ student.Grade }}</th>
+                    <th>{{ student.Status }}</th>
+                </tr>
+            </tfoot>
+        </table>
+        {% set pos = positions.get(student.student_id) %}
+        {% if pos %}
+            <div style="margin-top:6px;font-weight:600;">Position: {{ pos.pos }} out of {{ pos.size }} in class {{ pos.class }}</div>
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    <p class="right"><a href="{{ url_for('view_students') }}">Back to students</a></p>
+</body>
+</html>

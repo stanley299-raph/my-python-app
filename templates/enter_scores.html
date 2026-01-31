@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter Scores for {{ session.get('firstname', 'Unknown') }} ({{ session.get('student_id', 'Unknown') }})</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 1200px;
+            position: relative;
+            overflow: hidden;
+        }
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #28a745, #20c997);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+            font-size: 2em;
+            font-weight: 300;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: 500;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-align: center;
+        }
+        button {
+            padding: 15px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
+        }
+        a {
+            text-decoration: none;
+            color: #28a745;
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        a:hover {
+            color: #1e7e34;
+        }
+        .flash {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body data-subjects="{{ session.get('subjects', []) | tojson }}">
+    <div class="container">
+        <h1>Enter Scores for {{ session['firstname'] }} ({{ session['student_id'] }})</h1>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <form method="post">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>First Test /10</th>
+                        <th>Second Test /10</th>
+                        <th>Third Test /10</th>
+                        <th>Total Test /30</th>
+                        <th>Objective Exam /30</th>
+                        <th>Theory Exam /40</th>
+                        <th>Total Exam /70</th>
+                        <th>Overall Mark /100</th>
+                        <th>Grade</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for subject in session['subjects'] %}
+                    <tr>
+                        <td>{{ subject }}</td>
+                        <td><input type="number" name="test1_{{ loop.index0 }}" min="0" max="10" required></td>
+                        <td><input type="number" name="test2_{{ loop.index0 }}" min="0" max="10" required></td>
+                        <td><input type="number" name="test3_{{ loop.index0 }}" min="0" max="10" required></td>
+                        <td><input type="number" name="total_test_{{ loop.index0 }}" readonly></td>
+                        <td><input type="number" name="obj_exam_{{ loop.index0 }}" min="0" max="30" required></td>
+                        <td><input type="number" name="theory_exam_{{ loop.index0 }}" min="0" max="40" required></td>
+                        <td><input type="number" name="total_exam_{{ loop.index0 }}" readonly></td>
+                        <td><input type="number" name="overall_{{ loop.index0 }}" readonly></td>
+                        <td><input type="text" name="grade_{{ loop.index0 }}" readonly></td>
+                        <td><input type="text" name="status_{{ loop.index0 }}" readonly></td>
+                    </tr>
+                    {% endfor %}
+                    <tr>
+                        <td><strong>Average</strong></td>
+                        <td colspan="7"></td>
+                        <td><input type="number" name="average" readonly></td>
+                        <td><input type="text" name="overall_grade" readonly></td>
+                        <td><input type="text" name="overall_status" readonly></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button type="submit">Add Student</button>
+        </form>
+        <a href="{{ url_for('add_student') }}">Back to Add Student</a>
+        <script>
+            function calculate() {
+                const subjects = {{ session.get('subjects', []) | tojson }};
+                let totalOverall = 0;
+                subjects.forEach((subject, index) => {
+                    const test1 = parseFloat(document.querySelector(`input[name="test1_${index}"]`).value) || 0;
+                    const test2 = parseFloat(document.querySelector(`input[name="test2_${index}"]`).value) || 0;
+                    const test3 = parseFloat(document.querySelector(`input[name="test3_${index}"]`).value) || 0;
+                    const totalTest = test1 + test2 + test3;
+                    document.querySelector(`input[name="total_test_${index}"]`).value = totalTest;
+
+                    const objExam = parseFloat(document.querySelector(`input[name="obj_exam_${index}"]`).value) || 0;
+                    const theoryExam = parseFloat(document.querySelector(`input[name="theory_exam_${index}"]`).value) || 0;
+                    const totalExam = objExam + theoryExam;
+                    document.querySelector(`input[name="total_exam_${index}"]`).value = totalExam;
+
+                    const overall = totalTest + totalExam;
+                    document.querySelector(`input[name="overall_${index}"]`).value = overall;
+
+                    const grade = overall >= 75 ? 'A' : overall >= 60 ? 'B' : overall >= 50 ? 'C' : overall >= 40 ? 'D' : 'F';
+                    document.querySelector(`input[name="grade_${index}"]`).value = grade;
+
+                    const status = overall >= 50 ? 'Passed' : 'Failed';
+                    document.querySelector(`input[name="status_${index}"]`).value = status;
+
+                    totalOverall += overall;
+                });
+                const average = totalOverall / subjects.length;
+                document.querySelector(`input[name="average"]`).value = average.toFixed(2);
+                const overallGrade = average >= 75 ? 'A' : average >= 60 ? 'B' : average >= 50 ? 'C' : average >= 40 ? 'D' : 'F';
+                document.querySelector(`input[name="overall_grade"]`).value = overallGrade;
+                const overallStatus = average >= 50 ? 'Passed' : 'Failed';
+                document.querySelector(`input[name="overall_status"]`).value = overallStatus;
+        }
+            document.querySelectorAll('input').forEach(input => {
+                input.addEventListener('input', calculate);
+            });
+        </script>
+    </div>
+</body>
+</html>

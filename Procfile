@@ -1,1 +1,2 @@
-web: python student_scor.py
+=======
+web: gunicorn student_scor:app

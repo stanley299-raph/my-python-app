@@ -4,13 +4,17 @@ Student Score Management System
 A comprehensive Flask web application for managing student academic records,
 including user authentication, score tracking, grading, and reporting features.
 
-Author: AI Assistant
+Author: Sondu Stanley
 Version: 1.0.0
 """
 
 from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, IntegerField, TextAreaField, SelectField, validators
+from flask_wtf.csrf import CSRFProtect
 import json
 import csv
+import re
 from io import StringIO, BytesIO
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -80,12 +84,31 @@ def get_valid_score(prompt, minimum, maximum):
         except ValueError:
             print("Invalid input! Please enter a valid integer.")
 
-def rank_students(students):
+def rank_students_by_average(students):
     valid_students = [
         s for s in students
         if isinstance(s, dict) and "average_marks" in s
     ]
     return sorted(valid_students, key=lambda x: x["average_marks"], reverse=True)
+
+def calculate_positions(students_list):
+    positions = {}
+    class_groups = {}
+    for student in students_list:
+        class_name = student['class_name']
+        if class_name not in class_groups:
+            class_groups[class_name] = []
+        class_groups[class_name].append(student)
+
+    for class_name, class_students in class_groups.items():
+        sorted_students = sorted(class_students, key=lambda x: x['average_marks'], reverse=True)
+        for i, student in enumerate(sorted_students, 1):
+            positions[student['student_id']] = {
+                'pos': i,
+                'size': len(sorted_students),
+                'class': class_name
+            }
+    return positions
 
 def find_student_id(user_students, student_id):
     sid = student_id.strip().lower()
@@ -114,7 +137,34 @@ def load_from_json(filename="students.json"):
     except (FileNotFoundError, json.JSONDecodeError):
         return {}
 
+# Data structure: users -> user_id -> students -> student_id -> student_data
 students = load_from_json()
+if not students:
+    students = {}
+    save_to_json(students)
+
+def load_reports():
+    """
+    Load reports from JSON file.
+
+    Returns:
+        list: List of report dictionaries
+    """
+    try:
+        with open("reports.json", "r") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return []
+
+def save_reports(reports):
+    """
+    Save reports to JSON file.
+
+    Args:
+        reports (list): List of report dictionaries
+    """
+    with open("reports.json", "w") as f:
+        json.dump(reports, f, indent=4)
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -132,7 +182,7 @@ def login():
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        username = request.form['username'].strip()
+        username = request.form['email'].strip()
         password = request.form['password']
         confirm_password = request.form['confirm_password']
         if password != confirm_password:
@@ -140,7 +190,7 @@ def signup():
             return redirect(url_for('signup'))
         users = load_users()
         if username in users:
-            flash('Username already exists')
+            flash('Email already exists')
             return redirect(url_for('signup'))
         users[username] = hash_password(password)
         save_users(users)
@@ -163,500 +213,623 @@ def menu():
 def add_student():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    user_id = session['user_id']
-    user_students = students.get(user_id, [])
     if request.method == 'POST':
-        student_id = request.form['student_id'].strip()
-        if find_student_id(user_students, student_id):
-            flash('Student ID already exists!')
-            return redirect(url_for('add_student'))
-        firstname = request.form['firstname'].strip()
-        classname = request.form['classname'].strip()
+        student_id = request.form['student_id']
+        firstname = request.form['firstname']
+        classname = request.form['classname']
         number_of_subject = int(request.form['number_of_subject'])
-        subjects_str = request.form['subjects']
-        subjects = [s.strip() for s in subjects_str.split(",") if s.strip()]
+
+        # Improved subject parsing: handle comma, space, or newline separated
+        subjects_input = request.form['subjects']
+        subjects = [s.strip() for s in re.split(r'[,\s\n]+', subjects_input.strip()) if s.strip()]
+
+        # Validation: Check if number of subjects matches
         if len(subjects) != number_of_subject:
-            flash('Number of subjects does not match the subjects provided.')
+            flash("Number of subjects does not match the subjects provided.", "error")
             return redirect(url_for('add_student'))
 
-        # Store in session and redirect to enter scores
-        session['student_id'] = student_id
-        session['firstname'] = firstname
-        session['classname'] = classname
-        session['number_of_subject'] = number_of_subject
-        session['subjects'] = subjects
-        return redirect(url_for('enter_scores'))
-    return render_template('add_student.html')
+        # Validation: Check for duplicate subjects
+        if len(set(subjects)) != len(subjects):
+            flash("Duplicate subjects are not allowed.", "error")
+            return redirect(url_for('add_student'))
 
-@app.route('/enter_scores', methods=['GET', 'POST'])
-def enter_scores():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    if 'student_id' not in session:
-        return redirect(url_for('add_student'))
-    if request.method == 'POST':
-        subjects = session['subjects']
-        subject_data = {}
-        alltogether = 0
-        # Validate and collect per-subject scores
-        for i, subject in enumerate(subjects):
-            try:
-                test1 = int(request.form[f'test1_{i}'])
-                test2 = int(request.form[f'test2_{i}'])
-                test3 = int(request.form[f'test3_{i}'])
-            except (KeyError, ValueError):
-                flash(f'Invalid or missing test scores for subject "{subject}".')
-                return redirect(url_for('enter_scores'))
-            if not (0 <= test1 <= 10 and 0 <= test2 <= 10 and 0 <= test3 <= 10):
-                flash(f'Tests for "{subject}" must be between 0 and 10.')
-                return redirect(url_for('enter_scores'))
-
-            total_test = test1 + test2 + test3
-
-            try:
-                obj_exam = int(request.form[f'obj_exam_{i}'])
-                theory_exam = int(request.form[f'theory_exam_{i}'])
-            except (KeyError, ValueError):
-                flash(f'Invalid or missing exam scores for subject "{subject}".')
-                return redirect(url_for('enter_scores'))
-            if not (0 <= obj_exam <= 30 and 0 <= theory_exam <= 40):
-                flash(f'Exam scores for "{subject}" must be within CBT 0-30 and Theory 0-40.')
-                return redirect(url_for('enter_scores'))
-
-            total_exam = obj_exam + theory_exam
-            subject_total = total_test + total_exam
-
-            # Subject grade and status
-            if subject_total >= 75:
-                sub_grade = 'A'
-            elif subject_total >= 60:
-                sub_grade = 'B'
-            elif subject_total >= 50:
-                sub_grade = 'C'
-            elif subject_total >= 40:
-                sub_grade = 'D'
-            else:
-                sub_grade = 'F'
-            sub_status = 'Passed' if subject_total >= 50 else 'Failed'
-
-            subject_data[subject] = {
-                "tests": [test1, test2, test3],
-                "total_test": total_test,
-                "cbt": obj_exam,
-                "theory_exam": theory_exam,
-                "total_exam": total_exam,
-                "overall_mark": subject_total,
-                "grade": sub_grade,
-                "status": sub_status
-            }
-            alltogether += subject_total
-
-        number = len(subjects)
-        average_per_subject = (alltogether / number) if number > 0 else 0
-
-        # Overall grade and status based on average per subject
-        if average_per_subject >= 75:
-            grade = 'A'
-        elif average_per_subject >= 60:
-            grade = 'B'
-        elif average_per_subject >= 50:
-            grade = 'C'
-        elif average_per_subject >= 40:
-            grade = 'D'
-        else:
-            grade = 'F'
-        status = 'Passed' if average_per_subject >= 50 else 'Failed'
-
-        user_id = session.get('user_id')
+        user_id = session['user_id']
         if user_id not in students:
-            students[user_id] = []
-        student = {
-            "student_id": session['student_id'],
-            "first_name": session['firstname'],
-            "class_name": session['classname'],
-            "number_of_subject": session['number_of_subject'],
-            "subjects": subject_data,
-            "total_marks": alltogether,
-            "average_marks": average_per_subject,
-            "Grade": grade,
-            "Status": status
+            students[user_id] = {}
+
+        students[user_id][student_id] = {
+            'firstname': firstname,
+            'classname': classname,
+            'number_of_subject': number_of_subject,
+            'subjects': subjects,
+            'scores': {}
         }
-        students[user_id].append(student)
+
         save_to_json(students)
-        # Clear session
-        session.pop('student_id', None)
-        session.pop('firstname', None)
-        session.pop('classname', None)
-        session.pop('number_of_subject', None)
-        session.pop('subjects', None)
-        flash('Student added successfully!')
-        return redirect(url_for('menu'))
-    return render_template('enter_scores.html')
+        flash('Student added successfully! Now enter scores for each subject.', 'success')
+        return redirect(url_for('enter_scores', student_id=student_id))
+
+    return render_template('add_student.html')
 
 @app.route('/view_students')
 def view_students():
     if 'user_id' not in session:
         return redirect(url_for('login'))
+
     user_id = session['user_id']
-    user_students = students.get(user_id, [])
-    return render_template('view_students.html', students=user_students)
+    user_students = students.get(user_id, {})
+
+    # Transform data to match template expectations
+    students_list = []
+    total_average = 0
+    grade_a_count = 0
+    pass_count = 0
+
+    for student_id, student_data in user_students.items():
+        # Calculate average marks from overall_mark
+        scores = student_data.get('scores', {})
+        if scores:
+            overall_marks = []
+            for subj_data in scores.values():
+                if isinstance(subj_data, dict):
+                    # New format: detailed score object
+                    overall_marks.append(subj_data.get('overall_mark', 0))
+                elif isinstance(subj_data, (int, float)):
+                    # Old format: simple number
+                    overall_marks.append(float(subj_data))
+            average_marks = sum(overall_marks) / len(overall_marks) if overall_marks else 0
+        else:
+            average_marks = 0
+
+        # Determine grade
+        if average_marks >= 90:
+            grade = 'A'
+            grade_a_count += 1
+        elif average_marks >= 80:
+            grade = 'B'
+        elif average_marks >= 70:
+            grade = 'C'
+        elif average_marks >= 60:
+            grade = 'D'
+        else:
+            grade = 'F'
+
+        # Determine status
+        status = 'Pass' if average_marks >= 60 else 'Fail'
+        if status == 'Pass':
+            pass_count += 1
+
+        total_average += average_marks
+
+        students_list.append({
+            'first_name': student_data.get('firstname', ''),
+            'student_id': student_id,
+            'class_name': student_data.get('classname', ''),
+            'subjects': {
+                subj: {
+                    'overall_mark': subj_data.get('overall_mark', 0) if isinstance(subj_data, dict) else 0,
+                    'grade': subj_data.get('grade', grade) if isinstance(subj_data, dict) else grade,
+                    'status': status,
+                    'tests': [subj_data.get('first_test', 0), subj_data.get('second_test', 0), subj_data.get('third_test', 0)] if isinstance(subj_data, dict) else [],
+                    'cbt': subj_data.get('objective', 0) if isinstance(subj_data, dict) else 0,
+                    'theory_exam': subj_data.get('theory', 0) if isinstance(subj_data, dict) else 0,
+                    'total_exam': subj_data.get('total_exam', 0) if isinstance(subj_data, dict) else 0,
+                    'total_test': subj_data.get('total_test', 0) if isinstance(subj_data, dict) else 0
+                }
+                for subj, subj_data in scores.items()
+            },
+            'average_marks': average_marks,
+            'Grade': grade,
+            'Status': status
+        })
+
+    # Calculate overall statistics
+    overall_average = total_average / len(students_list) if students_list else 0
+
+    # Get unique classes for filter dropdown
+    classes = list(set(student['class_name'] for student in students_list))
+    positions = calculate_positions(students_list)
+
+    return render_template('view_students.html',
+                         students=students_list,
+                         total_students=len(students_list),
+                         grade_a_count=grade_a_count,
+                         pass_count=pass_count,
+                         overall_average=overall_average,
+                         classes=classes,
+                         positions=positions)
 
 @app.route('/edit_student', methods=['GET', 'POST'])
 def edit_student():
     if 'user_id' not in session:
         return redirect(url_for('login'))
+
     user_id = session['user_id']
-    user_students = students.get(user_id, [])
+    user_students = students.get(user_id, {})
+
     if request.method == 'POST':
-        student_id = request.form['student_id'].strip()
-        student = find_student_id(user_students, student_id)
-        if not student:
+        student_id = request.form.get('student_id')
+        if student_id and student_id in user_students:
+            # Update student data
+            user_students[student_id]['firstname'] = request.form.get('firstname', '')
+            user_students[student_id]['classname'] = request.form.get('classname', '')
+            user_students[student_id]['number_of_subject'] = int(request.form.get('number_of_subject', 0))
+            user_students[student_id]['subjects'] = [s.strip() for s in re.split(r'[,\s]+', request.form.get('subjects', '')) if s.strip()]
+
+            save_to_json(students)
+            flash('Student updated successfully!')
+            return redirect(url_for('view_students'))
+        else:
             flash('Student not found.')
-            return redirect(url_for('edit_student'))
-        student['first_name'] = request.form['firstname'].strip()
-        student['class_name'] = request.form['classname'].strip()
-        student['Status'] = request.form['status'].strip()
-        save_to_json(students)
-        flash('Student updated successfully!')
-        return redirect(url_for('menu'))
-    return render_template('edit_student.html')
+
+    # For GET request, show form to select student
+    student_id = request.args.get('student_id')
+    if student_id and student_id in user_students:
+        student = user_students[student_id]
+        return render_template('edit_student.html', student=student, student_id=student_id, students=user_students)
+    else:
+        return render_template('edit_student.html', students=user_students)
 
 @app.route('/delete_student', methods=['GET', 'POST'])
 def delete_student():
     if 'user_id' not in session:
         return redirect(url_for('login'))
+
     user_id = session['user_id']
-    user_students = students.get(user_id, [])
+    user_students = students.get(user_id, {})
+
     if request.method == 'POST':
-        student_id = request.form['student_id'].strip()
-        student = find_student_id(user_students, student_id)
-        if not student:
+        student_id = request.form.get('student_id')
+        if student_id and student_id in user_students:
+            del user_students[student_id]
+            save_to_json(students)
+            flash('Student deleted successfully!')
+            return redirect(url_for('view_students'))
+        else:
             flash('Student not found.')
-            return redirect(url_for('delete_student'))
-        user_students.remove(student)
-        save_to_json(students)
-        flash(f'Student {student_id} deleted successfully.')
-        return redirect(url_for('menu'))
-    return render_template('delete_student.html')
+
+    return render_template('delete_student.html', students=user_students)
 
 @app.route('/search_student', methods=['GET', 'POST'])
 def search_student():
     if 'user_id' not in session:
         return redirect(url_for('login'))
+
     user_id = session['user_id']
-    user_students = students.get(user_id, [])
-    student = None
+    user_students = students.get(user_id, {})
+
+    search_results = []
+    search_query = ''
+
     if request.method == 'POST':
-        student_id = request.form['student_id'].strip()
-        student = find_student_id(user_students, student_id)
-        if not student:
-            flash('Student not found.')
-    return render_template('search_student.html', student=student)
+        search_query = request.form.get('search_query', '').strip().lower()
+
+        if search_query:
+            for student_id, student_data in user_students.items():
+                if (search_query in student_id.lower() or
+                    search_query in student_data.get('firstname', '').lower() or
+                    search_query in student_data.get('classname', '').lower()):
+                    # Calculate average marks from overall_mark
+                    scores = student_data.get('scores', {})
+                    if scores:
+                        overall_marks = [subj_data.get('overall_mark', 0) for subj_data in scores.values() if isinstance(subj_data, dict)]
+                        average_marks = sum(overall_marks) / len(overall_marks) if overall_marks else 0
+                    else:
+                        average_marks = 0
+
+                    # Determine grade
+                    if average_marks >= 90:
+                        grade = 'A'
+                    elif average_marks >= 80:
+                        grade = 'B'
+                    elif average_marks >= 70:
+                        grade = 'C'
+                    elif average_marks >= 60:
+                        grade = 'D'
+                    else:
+                        grade = 'F'
+
+                    # Determine status
+                    status = 'Pass' if average_marks >= 60 else 'Fail'
+
+                    search_results.append({
+                        'first_name': student_data.get('firstname', ''),
+                        'student_id': student_id,
+                        'class_name': student_data.get('classname', ''),
+                        'subjects': {subj: subj_data.get('overall_mark', 0) for subj, subj_data in scores.items() if isinstance(subj_data, dict)},
+                        'average_marks': average_marks,
+                        'Grade': grade,
+                        'Status': status
+                    })
+
+    return render_template('search_student.html', students=search_results, search_query=search_query)
 
 @app.route('/rank_students')
-def rank_students_route():
+def rank_students():
     if 'user_id' not in session:
         return redirect(url_for('login'))
+
     user_id = session['user_id']
-    user_students = students.get(user_id, [])
-    # Optional filter by class
-    class_filter = request.args.get('class')
-    # Group students by class and sort each group by average_marks descending
-    grouped = {}
-    for s in user_students:
-        if not isinstance(s, dict) or 'average_marks' not in s:
-            continue
-        cls = s.get('class_name', 'Unknown')
-        grouped.setdefault(cls, []).append(s)
-    for cls in grouped:
-        grouped[cls].sort(key=lambda x: x.get('average_marks', 0), reverse=True)
-    if class_filter:
-        grouped = {k: v for k, v in grouped.items() if k.strip().lower() == class_filter.strip().lower()}
-    return render_template('rank_students.html', ranked=grouped, class_filter=class_filter or '')
+    user_students = students.get(user_id, {})
 
-@app.route('/reports/export_rank_csv')
-def export_rank_csv():
-    """Export ranking as CSV. Optional query param 'class' filters by class."""
+    class_filter = request.args.get('class', '').strip()
+
+    # Transform data and calculate averages
+    students_list = []
+    for student_id, student_data in user_students.items():
+        scores = student_data.get('scores', {})
+        if scores:
+            overall_marks = []
+            for subj_data in scores.values():
+                if isinstance(subj_data, dict):
+                    # New format: detailed score object
+                    overall_marks.append(subj_data.get('overall_mark', 0))
+                elif isinstance(subj_data, (int, float)):
+                    # Old format: simple number
+                    overall_marks.append(float(subj_data))
+            average_marks = sum(overall_marks) / len(overall_marks) if overall_marks else 0
+        else:
+            average_marks = 0
+
+        # Determine grade
+        if average_marks >= 90:
+            grade = 'A'
+        elif average_marks >= 80:
+            grade = 'B'
+        elif average_marks >= 70:
+            grade = 'C'
+        elif average_marks >= 60:
+            grade = 'D'
+        else:
+            grade = 'F'
+
+        # Determine status
+        status = 'Pass' if average_marks >= 60 else 'Fail'
+
+        students_list.append({
+            'first_name': student_data.get('firstname', ''),
+            'student_id': student_id,
+            'class_name': student_data.get('classname', ''),
+            'subjects': {subj: subj_data.get('overall_mark', 0) for subj, subj_data in scores.items() if isinstance(subj_data, dict)},
+            'average_marks': average_marks,
+            'Grade': grade,
+            'Status': status
+        })
+
+    # Filter by class if specified
+    if class_filter:
+        students_list = [s for s in students_list if s['class_name'].lower() == class_filter.lower()]
+
+    # Group by class and sort within each class
+    ranked = {}
+    for student in students_list:
+        class_name = student['class_name']
+        if class_name not in ranked:
+            ranked[class_name] = []
+        ranked[class_name].append(student)
+
+    for class_name in ranked:
+        ranked[class_name].sort(key=lambda x: x['average_marks'], reverse=True)
+
+    return render_template('rank_students.html', ranked=ranked, class_filter=class_filter)
+
+@app.route('/enter_scores', methods=['GET', 'POST'])
+def enter_scores():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    class_filter = request.args.get('class')
-    # Build grouped/sorted data
-    grouped = {}
-    for user_id, user_students in students.items():
-        for s in user_students:
-            if not isinstance(s, dict) or 'average_marks' not in s:
-                continue
-            cls = s.get('class_name', 'Unknown')
-            grouped.setdefault(cls, []).append(s)
-    for cls in grouped:
-        grouped[cls].sort(key=lambda x: x.get('average_marks', 0), reverse=True)
-    if class_filter:
-        grouped = {k: v for k, v in grouped.items() if k.strip().lower() == class_filter.strip().lower()}
 
-    # Create CSV
-    si = StringIO()
-    writer = csv.writer(si)
-    writer.writerow(['class_name', 'position', 'student_id', 'first_name', 'average_marks', 'Grade', 'Status'])
-    for cls, lst in grouped.items():
-        for pos, s in enumerate(lst, start=1):
-            writer.writerow([cls, pos, s.get('student_id',''), s.get('first_name',''), s.get('average_marks',''), s.get('Grade',''), s.get('Status','')])
-    output = si.getvalue()
-    return (output, 200, {
-        'Content-Type': 'text/csv',
-        'Content-Disposition': 'attachment; filename="rankings.csv"'
-    })
-
-@app.route('/reports/export_rank_xlsx')
-def export_rank_xlsx():
-    """Export ranking as XLSX. Optional query param 'class' filters by class."""
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    class_filter = request.args.get('class')
-    # Build grouped/sorted data
-    grouped = {}
-    for user_id, user_students in students.items():
-        for s in user_students:
-            if not isinstance(s, dict) or 'average_marks' not in s:
-                continue
-            cls = s.get('class_name', 'Unknown')
-            grouped.setdefault(cls, []).append(s)
-    for cls in grouped:
-        grouped[cls].sort(key=lambda x: x.get('average_marks', 0), reverse=True)
-    if class_filter:
-        grouped = {k: v for k, v in grouped.items() if k.strip().lower() == class_filter.strip().lower()}
-
-    # Create XLSX in memory
-    try:
-        from openpyxl import Workbook
-        from io import BytesIO
-    except Exception as e:
-        flash('XLSX export requires openpyxl.')
-        return redirect(url_for('rank_students_route'))
-
-    wb = Workbook()
-    ws = wb.active
-    ws.title = 'Rankings'
-    headers = ['class_name', 'position', 'student_id', 'first_name', 'average_marks', 'Grade', 'Status']
-    ws.append(headers)
-
-    # Fill rows
-    for cls, lst in grouped.items():
-        for pos, s in enumerate(lst, start=1):
-            ws.append([cls, pos, s.get('student_id',''), s.get('first_name',''), s.get('average_marks',''), s.get('Grade',''), s.get('Status','')])
-
-    # Styling: bold headers and freeze panes
-    try:
-        from openpyxl.styles import Font, Alignment
-        from openpyxl.utils import get_column_letter
-    except Exception:
-        Font = None
-        Alignment = None
-        get_column_letter = None
-
-    if Font:
-        for col_idx, header in enumerate(headers, start=1):
-            cell = ws.cell(row=1, column=col_idx)
-            cell.font = Font(bold=True)
-            cell.alignment = Alignment(horizontal='center')
-        ws.freeze_panes = 'A2'
-
-    # Auto-fit column widths based on max length in each column
-    if get_column_letter:
-        for col_idx in range(1, ws.max_column + 1):
-            col_letter = get_column_letter(col_idx)
-            max_len = 0
-            for row in ws.iter_rows(min_row=1, min_col=col_idx, max_col=col_idx, max_row=ws.max_row):
-                cell = row[0]
-                val = cell.value
-                if val is None:
-                    continue
-                l = len(str(val))
-                if l > max_len:
-                    max_len = l
-            adjusted_width = (max_len + 2)
-            if adjusted_width < 8:
-                adjusted_width = 8
-            if adjusted_width > 50:
-                adjusted_width = 50
-            ws.column_dimensions[col_letter].width = adjusted_width
-
-    bio = BytesIO()
-    wb.save(bio)
-    bio.seek(0)
-    return send_file(bio, as_attachment=True, download_name='rankings.xlsx', mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-
-@app.route('/student/<path:student_id>')
-def student_report(student_id):
-    """Show printable per-subject report for a single student, with class position."""
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
+    student_id = request.args.get('student_id')
     user_id = session['user_id']
-    user_students = students.get(user_id, [])
-    student = find_student_id(user_students, student_id)
-    if not student:
+
+    if not student_id or user_id not in students or student_id not in students[user_id]:
+        flash('Student not found.')
+        return redirect(url_for('menu'))
+
+    student = students[user_id][student_id]
+
+    if request.method == 'POST':
+        scores = {}
+        invalid_scores = []
+        for subject in student['subjects']:
+            subj_key = subject.replace(' ', '_')
+            subject_scores = {}
+            try:
+                first_test = float(request.form.get(f'first_test_{subj_key}', 0))
+                second_test = float(request.form.get(f'second_test_{subj_key}', 0))
+                third_test = float(request.form.get(f'third_test_{subj_key}', 0))
+                objective = float(request.form.get(f'objective_{subj_key}', 0))
+                theory = float(request.form.get(f'theory_{subj_key}', 0))
+
+                # Validate ranges
+                if not (0 <= first_test <= 10): invalid_scores.append(f'{subject}: First test must be 0-10')
+                if not (0 <= second_test <= 10): invalid_scores.append(f'{subject}: Second test must be 0-10')
+                if not (0 <= third_test <= 10): invalid_scores.append(f'{subject}: Third test must be 0-10')
+                if not (0 <= objective <= 30): invalid_scores.append(f'{subject}: Objective must be 0-30')
+                if not (0 <= theory <= 40): invalid_scores.append(f'{subject}: Theory must be 0-40')
+
+                # Calculate totals and grades
+                calculated_total_test = first_test + second_test + third_test
+                calculated_total_exam = objective + theory
+                calculated_overall_mark = calculated_total_test + calculated_total_exam
+                if not (0 <= calculated_total_test <= 30): invalid_scores.append(f'{subject}: Total test must be 0-30')
+                if not (0 <= calculated_total_exam <= 70): invalid_scores.append(f'{subject}: Total exam must be 0-70')
+                if not (0 <= calculated_overall_mark <= 100): invalid_scores.append(f'{subject}: Overall mark must be 0-100')
+
+                # Determine test grade based on total test
+                if calculated_total_test >= 27:
+                    calculated_test_grade = 'A'
+                elif calculated_total_test >= 24:
+                    calculated_test_grade = 'B'
+                elif calculated_total_test >= 21:
+                    calculated_test_grade = 'C'
+                elif calculated_total_test >= 18:
+                    calculated_test_grade = 'D'
+                else:
+                    calculated_test_grade = 'F'
+
+                # Determine overall grade based on overall mark
+                if calculated_overall_mark >= 90:
+                    calculated_grade = 'A'
+                elif calculated_overall_mark >= 80:
+                    calculated_grade = 'B'
+                elif calculated_overall_mark >= 70:
+                    calculated_grade = 'C'
+                elif calculated_overall_mark >= 60:
+                    calculated_grade = 'D'
+                else:
+                    calculated_grade = 'F'
+
+                subject_scores = {
+                    'first_test': first_test,
+                    'second_test': second_test,
+                    'third_test': third_test,
+                    'total_test': calculated_total_test,
+                    'test_grade': calculated_test_grade,
+                    'objective': objective,
+                    'theory': theory,
+                    'total_exam': calculated_total_exam,
+                    'overall_mark': calculated_overall_mark,
+                    'grade': calculated_grade
+                }
+                scores[subject] = subject_scores
+            except ValueError:
+                invalid_scores.append(f'{subject}: Invalid number format')
+
+        if invalid_scores:
+            for error in invalid_scores:
+                flash(error, 'error')
+            return redirect(url_for('enter_scores', student_id=student_id))
+
+        student['scores'] = scores
+        save_to_json(students)
+        flash('Scores entered successfully!')
+        return redirect(url_for('menu'))
+
+    return render_template('enter_scores.html', student=student, student_id=student_id)
+
+@app.route('/student_report')
+def student_report():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    student_id = request.args.get('student_id')
+    user_id = session['user_id']
+
+    if not student_id or user_id not in students or student_id not in students[user_id]:
         flash('Student not found.')
         return redirect(url_for('view_students'))
 
-    # Compute class-wise positions across user's students
-    grouped = {}
-    for s in user_students:
-        if not isinstance(s, dict) or 'average_marks' not in s:
-            continue
-        cls = s.get('class_name', 'Unknown')
-        grouped.setdefault(cls, []).append(s)
-    for cls in grouped:
-        grouped[cls].sort(key=lambda x: x.get('average_marks', 0), reverse=True)
-    positions = {}
-    for cls, lst in grouped.items():
-        size = len(lst)
-        for pos, s in enumerate(lst, start=1):
-            positions[s.get('student_id','')] = {'pos': pos, 'size': size, 'class': cls}
+    student_data = students[user_id][student_id]
+    scores = student_data.get('scores', {})
 
-    pos = positions.get(student.get('student_id',''))
-    return render_template('student_report.html', student=student, position=pos)
+    if scores:
+        overall_marks = [subj_data.get('overall_mark', 0) for subj_data in scores.values() if isinstance(subj_data, dict)]
+        average_marks = sum(overall_marks) / len(overall_marks) if overall_marks else 0
+    else:
+        average_marks = 0
+
+    if average_marks >= 90:
+        grade = 'A'
+    elif average_marks >= 80:
+        grade = 'B'
+    elif average_marks >= 70:
+        grade = 'C'
+    elif average_marks >= 60:
+        grade = 'D'
+    else:
+        grade = 'F'
+
+    status = 'Pass' if average_marks >= 60 else 'Fail'
+
+    # Restructure subjects as dictionary with score data
+    subjects_with_scores = {}
+    for subject in student_data.get('subjects', []):
+        subjects_with_scores[subject] = scores.get(subject, {})
+
+    # Build positions across this user's students
+    students_list = []
+    for sid, sdata in students[user_id].items():
+        sscores = sdata.get('scores', {})
+        if sscores:
+            overall_marks = [subj_data.get('overall_mark', 0) for subj_data in sscores.values() if isinstance(subj_data, dict)]
+            avg_marks = sum(overall_marks) / len(overall_marks) if overall_marks else 0
+        else:
+            avg_marks = 0
+        students_list.append({
+            'first_name': sdata.get('firstname', ''),
+            'student_id': sid,
+            'class_name': sdata.get('classname', ''),
+            'subjects': sscores,
+            'average_marks': avg_marks
+        })
+    positions = calculate_positions(students_list)
+
+    student = {
+        'first_name': student_data.get('firstname', ''),
+        'student_id': student_id,
+        'class_name': student_data.get('classname', ''),
+        'number_of_subject': student_data.get('number_of_subject', 0),
+        'subjects': subjects_with_scores,  # Now a dict: subject -> score_data
+        'average_marks': average_marks,
+        'Grade': grade,
+        'Status': status
+    }
+
+    return render_template('student_report.html', student=student, position=positions.get(student_id))
+
+@app.route('/all_students_report')
+def all_students_report():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    user_id = session['user_id']
+    user_students = students.get(user_id, {})
+    class_filter = request.args.get('class', '').strip()
+    student_id_filter = request.args.get('student_id', '').strip()
+
+    # Transform data to match template expectations
+    students_list = []
+    for student_id, student_data in user_students.items():
+        # Calculate average marks from overall_mark
+        scores = student_data.get('scores', {})
+        if scores:
+            overall_marks = []
+            for subj_data in scores.values():
+                if isinstance(subj_data, dict):
+                    # New format: detailed score object
+                    overall_marks.append(subj_data.get('overall_mark', 0))
+                elif isinstance(subj_data, (int, float)):
+                    # Old format: simple number
+                    overall_marks.append(float(subj_data))
+            average_marks = sum(overall_marks) / len(overall_marks) if overall_marks else 0
+        else:
+            average_marks = 0
+
+        # Determine grade
+        if average_marks >= 90:
+            grade = 'A'
+        elif average_marks >= 80:
+            grade = 'B'
+        elif average_marks >= 70:
+            grade = 'C'
+        elif average_marks >= 60:
+            grade = 'D'
+        else:
+            grade = 'F'
+
+        # Determine status
+        status = 'Pass' if average_marks >= 60 else 'Fail'
+
+        students_list.append({
+            'first_name': student_data.get('firstname', ''),
+            'student_id': student_id,
+            'class_name': student_data.get('classname', ''),
+            'subjects': {
+                subj: {
+                    'overall_mark': subj_data.get('overall_mark', 0) if isinstance(subj_data, dict) else 0,
+                    'grade': subj_data.get('grade', grade) if isinstance(subj_data, dict) else grade,
+                    'status': status,
+                    'tests': [subj_data.get('first_test', 0), subj_data.get('second_test', 0), subj_data.get('third_test', 0)] if isinstance(subj_data, dict) else [],
+                    'cbt': subj_data.get('objective', 0) if isinstance(subj_data, dict) else 0,
+                    'theory_exam': subj_data.get('theory', 0) if isinstance(subj_data, dict) else 0,
+                    'total_exam': subj_data.get('total_exam', 0) if isinstance(subj_data, dict) else 0,
+                    'total_test': subj_data.get('total_test', 0) if isinstance(subj_data, dict) else 0
+                }
+                for subj, subj_data in scores.items()
+            },
+            'average_marks': average_marks,
+            'Grade': grade,
+            'Status': status
+        })
+
+    # Apply filters (case-insensitive)
+    if class_filter:
+        students_list = [
+            s for s in students_list
+            if s.get('class_name', '').lower() == class_filter.lower()
+        ]
+    if student_id_filter:
+        students_list = [
+            s for s in students_list
+            if s.get('student_id', '').lower() == student_id_filter.lower()
+        ]
+
+    positions = calculate_positions(students_list)
+
+    return render_template(
+        'all_students_report.html',
+        students=students_list,
+        positions=positions,
+        now=datetime.now().strftime("%Y-%m-%d %H:%M"),
+        class_filter=class_filter,
+        student_id_filter=student_id_filter
+    )
 
 @app.route('/reports/all_students')
-def all_students_report():
-    """Printable report for all students with optional filters."""
+def reports_all_students():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    from datetime import datetime
-    class_filter = request.args.get('class')
-    student_id_filter = request.args.get('student_id')
-
-    def _filter(studs):
-        all_students = []
-        for user_students in studs.values():
-            all_students.extend(user_students)
-        results = all_students
-        if class_filter:
-            results = [s for s in results if s.get('class_name','').strip().lower() == class_filter.strip().lower()]
-        if student_id_filter:
-            results = [s for s in results if s.get('student_id','').strip().lower() == student_id_filter.strip().lower()]
-        return results
-
-    filtered = _filter(students)
-    # Compute class-wise ranking positions for filtered set
-    grouped = {}
-    for s in filtered:
-        if not isinstance(s, dict) or 'average_marks' not in s:
-            continue
-        cls = s.get('class_name', 'Unknown')
-        grouped.setdefault(cls, []).append(s)
-    for cls in grouped:
-        grouped[cls].sort(key=lambda x: x.get('average_marks', 0), reverse=True)
-    positions = {}
-    for cls, lst in grouped.items():
-        size = len(lst)
-        for pos, s in enumerate(lst, start=1):
-            positions[s.get('student_id','')] = {'pos': pos, 'size': size, 'class': cls}
-
-    return render_template('all_students_report.html', students=filtered, now=datetime.now().strftime('%Y-%m-%d %H:%M'), class_filter=class_filter or '', student_id_filter=student_id_filter or '', positions=positions)
-
-import csv
-from io import StringIO
+    return redirect(url_for('all_students_report'))
 
 @app.route('/reports/export_csv')
-def export_csv():
-    """Export a summary CSV (one row per student). Supports optional filters via query params."""
+def reports_export_csv():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    class_filter = request.args.get('class')
-    student_id_filter = request.args.get('student_id')
+    # For now, just redirect to all_students_report
+    return redirect(url_for('all_students_report'))
 
-    def _filter(studs):
-        all_students = []
-        for user_students in studs.values():
-            all_students.extend(user_students)
-        results = all_students
-        if class_filter:
-            results = [s for s in results if s.get('class_name','').strip().lower() == class_filter.strip().lower()]
-        if student_id_filter:
-            results = [s for s in results if s.get('student_id','').strip().lower() == student_id_filter.strip().lower()]
-        return results
-
-    filtered = _filter(students)
-
-    # Compute positions within filtered set
-    grouped = {}
-    for s in filtered:
-        if not isinstance(s, dict) or 'average_marks' not in s:
-            continue
-        cls = s.get('class_name', 'Unknown')
-        grouped.setdefault(cls, []).append(s)
-    for cls in grouped:
-        grouped[cls].sort(key=lambda x: x.get('average_marks', 0), reverse=True)
-    positions = {}
-    for cls, lst in grouped.items():
-        size = len(lst)
-        for pos, s in enumerate(lst, start=1):
-            positions[s.get('student_id','')] = {'pos': pos, 'size': size}
-
-    si = StringIO()
-    writer = csv.writer(si)
-    writer.writerow(['student_id', 'first_name', 'class_name', 'number_of_subject', 'total_marks', 'average_marks', 'Grade', 'Status', 'position_in_class', 'class_size'])
-    for s in filtered:
-        p = positions.get(s.get('student_id',''), {})
-        writer.writerow([s.get('student_id',''), s.get('first_name',''), s.get('class_name',''), s.get('number_of_subject',''), s.get('total_marks',''), s.get('average_marks',''), s.get('Grade',''), s.get('Status',''), p.get('pos',''), p.get('size','')])
-    output = si.getvalue()
-    return (output, 200, {
-        'Content-Type': 'text/csv',
-        'Content-Disposition': 'attachment; filename="students_summary.csv"'
-    })
-
-@app.route('/reports/export_detailed_csv')
-def export_detailed_csv():
-    """Export detailed CSV (one row per student per subject). Supports optional filters via query params."""
+@app.route('/rank/export_csv')
+def export_rank_csv():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    class_filter = request.args.get('class')
-    student_id_filter = request.args.get('student_id')
+    # Placeholder: re-use existing CSV export until rank-specific export is implemented
+    return redirect(url_for('reports_export_csv', **request.args))
 
-    def _filter(studs):
-        all_students = []
-        for user_students in studs.values():
-            all_students.extend(user_students)
-        results = all_students
-        if class_filter:
-            results = [s for s in results if s.get('class_name','').strip().lower() == class_filter.strip().lower()]
-        if student_id_filter:
-            results = [s for s in results if s.get('student_id','').strip().lower() == student_id_filter.strip().lower()]
-        return results
+@app.route('/rank/export_xlsx')
+def export_rank_xlsx():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    flash('Rank XLSX export is not implemented yet.', 'info')
+    return redirect(url_for('rank_students', **request.args))
 
-    filtered = _filter(students)
+@app.route('/report_issue', methods=['GET', 'POST'])
+def report_issue():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
 
-    # Compute positions for filtered set
-    grouped = {}
-    for s in filtered:
-        if not isinstance(s, dict) or 'average_marks' not in s:
-            continue
-        cls = s.get('class_name', 'Unknown')
-        grouped.setdefault(cls, []).append(s)
-    for cls in grouped:
-        grouped[cls].sort(key=lambda x: x.get('average_marks', 0), reverse=True)
-    positions = {}
-    for cls, lst in grouped.items():
-        size = len(lst)
-        for pos, s in enumerate(lst, start=1):
-            positions[s.get('student_id','')] = {'pos': pos, 'size': size}
+    if request.method == 'POST':
+        issue_description = request.form.get('issue_description', '').strip()
+        if issue_description:
+            reports = load_reports()
+            report = {
+                'user_id': session['user_id'],
+                'description': issue_description,
+                'timestamp': datetime.now().isoformat(),
+                'status': 'unread'
+            }
+            reports.append(report)
+            save_reports(reports)
+            flash('Issue reported successfully! Thank you for your feedback.', 'success')
+            return redirect(url_for('menu'))
+        else:
+            flash('Please describe the issue.', 'error')
 
-    si = StringIO()
-    writer = csv.writer(si)
-    writer.writerow(['student_id','first_name','class_name','subject','test1','test2','test3','total_test','cbt','theory_exam','total_exam','overall_mark','grade','status','position_in_class','class_size'])
-    for s in filtered:
-        p = positions.get(s.get('student_id',''), {})
-        for subject, v in s.get('subjects',{}).items():
-            t = v.get('tests', [])
-            test1 = t[0] if isinstance(t, (list,tuple)) and len(t) > 0 else ''
-            test2 = t[1] if isinstance(t, (list,tuple)) and len(t) > 1 else ''
-            test3 = t[2] if isinstance(t, (list,tuple)) and len(t) > 2 else ''
-            writer.writerow([s.get('student_id',''), s.get('first_name',''), s.get('class_name',''), subject, test1, test2, test3, v.get('total_test', ''), v.get('cbt',''), v.get('theory_exam',''), v.get('total_exam',''), v.get('overall_mark', v.get('total','')), v.get('grade',''), v.get('status',''), p.get('pos',''), p.get('size','')])
-    output = si.getvalue()
-    return (output, 200, {
-        'Content-Type': 'text/csv',
-        'Content-Disposition': 'attachment; filename="students_detailed.csv"'
-    })
+    return render_template('report_issue.html')
+
+@app.route('/view_reports')
+def view_reports():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    # Only allow admin user to view reports
+    if session['user_id'] != 'osondu':
+        flash('Access denied. Only administrators can view reports.', 'error')
+        return redirect(url_for('menu'))
+
+    reports = load_reports()
+    return render_template('view_reports.html', reports=reports)
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=False)
+    app.run(debug=True)
+
+

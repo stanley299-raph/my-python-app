@@ -647,11 +647,12 @@ def enter_scores():
     student_id = request.args.get('student_id')
     user_id = session['user_id']
 
-    if not student_id or user_id not in students or student_id not in students[user_id]:
+    user_students = load_students(user_id)
+    if not student_id or student_id not in user_students:
         flash('Student not found.')
         return redirect(url_for('menu'))
 
-    student = students[user_id][student_id]
+    student = user_students[student_id]
 
     if request.method == 'POST':
         scores = {}
@@ -727,7 +728,7 @@ def enter_scores():
             return redirect(url_for('enter_scores', student_id=student_id))
 
         student['scores'] = scores
-        save_to_json(students)
+        save_student(user_id, student_id, student)
         flash('Scores entered successfully!')
         return redirect(url_for('menu'))
 

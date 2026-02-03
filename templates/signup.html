@@ -3,27 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up</title>
+    <title>Sign Up - Student Score Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f4; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); width: 300px; }
-        h1 { text-align: center; margin-bottom: 20px; }
-        form { display: flex; flex-direction: column; }
-        label { margin-bottom: 5px; }
-        input { padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; }
-        button { padding: 10px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; margin-bottom: 10px; }
-        button:hover { background: #218838; }
-        .link { text-align: center; margin-top: 10px; }
-        .link a { color: #007bff; text-decoration: none; }
-        .link a:hover { text-decoration: underline; }
-        .flash { margin-bottom: 15px; padding: 10px; border-radius: 4px; }
-        .success { background: #d4edda; color: #155724; }
-        .error { background: #f8d7da; color: #721c24; }
+        .school-selection {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+        }
+        .school-selection h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        .school-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .school-option:hover {
+            border-color: #3498db;
+            background: #ecf0f1;
+        }
+        .school-option.selected {
+            border-color: #3498db;
+            background: #d4edda;
+        }
+        .school-option input[type="radio"] {
+            display: none;
+        }
+        .school-option .radio-custom {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #bdc3c7;
+            border-radius: 50%;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .school-option.selected .radio-custom {
+            border-color: #27ae60;
+            background: #27ae60;
+        }
+        .school-option.selected .radio-custom::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+        }
+        .school-info {
+            flex: 1;
+        }
+        .school-name {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .school-desc {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+        .new-school-form {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e1e8ed;
+        }
+        .new-school-form.show {
+            display: block;
+        }
+        .password-strength {
+            margin-top: 5px;
+            font-size: 0.8rem;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        .strength-weak { color: #e74c3c; background: #fee; }
+        .strength-medium { color: #f39c12; background: #fff3cd; }
+        .strength-strong { color: #27ae60; background: #d4edda; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Sign Up</h1>
+    <div class="container fade-in">
+        <h1><i class="fas fa-school"></i> Join Student Score Management System</h1>
+
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -31,18 +107,182 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
-        <form method="post" action="{{ url_for('signup') }}">
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required>
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-            <label for="confirm_password">Confirm Password:</label>
-            <input type="password" id="confirm_password" name="confirm_password" required>
-            <button type="submit">Sign Up</button>
+
+        <form method="post" id="signupForm">
+            <div class="school-selection">
+                <h3><i class="fas fa-building"></i> Select Your School</h3>
+                <div class="school-option" data-school="existing">
+                    <input type="radio" id="existing_school" name="school_type" value="existing" checked>
+                    <div class="radio-custom"></div>
+                    <div class="school-info">
+                        <div class="school-name">Join Existing School</div>
+                        <div class="school-desc">Connect with an existing school in the system</div>
+                    </div>
+                </div>
+                <div class="school-option" data-school="new">
+                    <input type="radio" id="new_school" name="school_type" value="new">
+                    <div class="radio-custom"></div>
+                    <div class="school-info">
+                        <div class="school-name">Create New School</div>
+                        <div class="school-desc">Set up a new school account</div>
+                    </div>
+                </div>
+
+                <div class="new-school-form" id="newSchoolForm">
+                    <h4>Create New School</h4>
+                    <div class="input-group">
+                        <i class="fas fa-school"></i>
+                        <input type="text" id="school_name" name="school_name" placeholder="School Name" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <input type="text" id="school_address" name="school_address" placeholder="School Address">
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-phone"></i>
+                        <input type="tel" id="school_phone" name="school_phone" placeholder="School Phone">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3><i class="fas fa-user"></i> Account Information</h3>
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="email" name="email" placeholder="Enter your email address" required>
+                </div>
+                <span class="help-text">We'll use this for account verification and important updates</span>
+
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" name="password" placeholder="Create a strong password" required>
+                </div>
+                <div id="passwordStrength" class="password-strength" style="display: none;"></div>
+
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm your password" required>
+                </div>
+                <div id="passwordMatch" class="validation-message" style="display: none;"></div>
+            </div>
+
+            <div class="form-section">
+                <button type="submit" class="btn btn-success" style="width: 100%; font-size: 1.1rem; padding: 15px;">
+                    <i class="fas fa-user-plus"></i> Create Account
+                </button>
+            </div>
         </form>
-        <div class="link">
-            <a href="{{ url_for('login') }}">Already have an account? Login</a>
+
+        <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e1e8ed;">
+            <p style="color: #7f8c8d;">Already have an account?
+                <a href="{{ url_for('login') }}" style="color: #3498db; text-decoration: none; font-weight: 600;">
+                    <i class="fas fa-sign-in-alt"></i> Login here
+                </a>
+            </p>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const schoolOptions = document.querySelectorAll('.school-option');
+            const newSchoolForm = document.getElementById('newSchoolForm');
+            const passwordInput = document.getElementById('password');
+            const confirmPasswordInput = document.getElementById('confirm_password');
+            const passwordStrength = document.getElementById('passwordStrength');
+            const passwordMatch = document.getElementById('passwordMatch');
+
+            // School selection
+            schoolOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    schoolOptions.forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                    this.querySelector('input[type="radio"]').checked = true;
+
+                    if (this.dataset.school === 'new') {
+                        newSchoolForm.classList.add('show');
+                        document.getElementById('school_name').required = true;
+                    } else {
+                        newSchoolForm.classList.remove('show');
+                        document.getElementById('school_name').required = false;
+                    }
+                });
+            });
+
+            // Password strength checker
+            passwordInput.addEventListener('input', function() {
+                const password = this.value;
+                let strength = 0;
+                let feedback = [];
+
+                if (password.length >= 8) strength++;
+                else feedback.push('At least 8 characters');
+
+                if (/[a-z]/.test(password)) strength++;
+                else feedback.push('Lowercase letter');
+
+                if (/[A-Z]/.test(password)) strength++;
+                else feedback.push('Uppercase letter');
+
+                if (/[0-9]/.test(password)) strength++;
+                else feedback.push('Number');
+
+                if (/[^A-Za-z0-9]/.test(password)) strength++;
+                else feedback.push('Special character');
+
+                if (password.length > 0) {
+                    passwordStrength.style.display = 'block';
+                    if (strength < 3) {
+                        passwordStrength.className = 'password-strength strength-weak';
+                        passwordStrength.textContent = 'Weak password: ' + feedback.join(', ');
+                    } else if (strength < 4) {
+                        passwordStrength.className = 'password-strength strength-medium';
+                        passwordStrength.textContent = 'Medium password: Add ' + feedback.slice(-1);
+                    } else {
+                        passwordStrength.className = 'password-strength strength-strong';
+                        passwordStrength.textContent = 'Strong password!';
+                    }
+                } else {
+                    passwordStrength.style.display = 'none';
+                }
+            });
+
+            // Password confirmation
+            confirmPasswordInput.addEventListener('input', function() {
+                const password = passwordInput.value;
+                const confirmPassword = this.value;
+
+                if (confirmPassword.length > 0) {
+                    passwordMatch.style.display = 'block';
+                    if (password === confirmPassword) {
+                        passwordMatch.className = 'validation-message validation-success';
+                        passwordMatch.textContent = 'Passwords match!';
+                    } else {
+                        passwordMatch.className = 'validation-message validation-error';
+                        passwordMatch.textContent = 'Passwords do not match!';
+                    }
+                } else {
+                    passwordMatch.style.display = 'none';
+                }
+            });
+
+            // Form validation
+            document.getElementById('signupForm').addEventListener('submit', function(e) {
+                const password = passwordInput.value;
+                const confirmPassword = confirmPasswordInput.value;
+
+                if (password !== confirmPassword) {
+                    e.preventDefault();
+                    alert('Passwords do not match!');
+                    return false;
+                }
+
+                if (password.length < 8) {
+                    e.preventDefault();
+                    alert('Password must be at least 8 characters long!');
+                    return false;
+                }
+            });
+        });
+    </script>
 </body>
 </html>

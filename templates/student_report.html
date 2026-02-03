@@ -17,7 +17,11 @@
 </head>
 <body>
     <button class="print-btn" onclick="window.print()">Print</button>
-    <h1>Report for {{ student.first_name }} ({{ student.student_id }})</h1>
+    <h1>
+        Report for {{ student.first_name }} ({{ student.student_id }})
+        — Class: {{ student.class_name }}
+        {% if position %} — Rank: {{ position.pos }}/{{ position.size }}{% endif %}
+    </h1>
     <div class="meta">
         <strong>Class:</strong> {{ student.class_name }} &nbsp; | &nbsp;
         <strong>Subjects:</strong> {{ student.number_of_subject }}
@@ -45,19 +49,19 @@
         </thead>
         <tbody>
             {% for subject, s in student.subjects.items() %}
-            {% set tests = s.tests if s.tests is iterable and s.tests|length == 3 else [] %}
+            {% set tests = s.get('tests', []) %}
             <tr>
                 <td>{{ subject }}</td>
-                <td>{{ tests[0] if tests else (s.get('tests') if s.get('tests') is not iterable else '') }}</td>
-                <td>{{ tests[1] if tests else '' }}</td>
-                <td>{{ tests[2] if tests else '' }}</td>
-                <td>{{ s.get('total_test', s.get('tests', '')) }}</td>
-                <td>{{ s.get('cbt', '') }}</td>
-                <td>{{ s.get('theory_exam', s.get('exam', '')) }}</td>
-                <td>{{ s.get('total_exam', s.get('exam', '')) }}</td>
-                <td>{{ s.get('overall_mark', s.get('total', '')) }}</td>
+                <td>{{ tests[0] if tests|length > 0 else s.get('first_test', '') }}</td>
+                <td>{{ tests[1] if tests|length > 1 else s.get('second_test', '') }}</td>
+                <td>{{ tests[2] if tests|length > 2 else s.get('third_test', '') }}</td>
+                <td>{{ s.get('total_test', '') }}</td>
+                <td>{{ s.get('objective', '') }}</td>
+                <td>{{ s.get('theory', '') }}</td>
+                <td>{{ s.get('total_exam', '') }}</td>
+                <td>{{ s.get('overall_mark', '') }}</td>
                 <td>{{ s.get('grade', '') }}</td>
-                <td>{{ s.get('status', '') }}</td>
+                <td>{{ student.Status }}</td>
             </tr>
             {% endfor %}
         </tbody>

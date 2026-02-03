@@ -1,9 +1,11 @@
-# Deployment TODO
+# TODO: Make All Students Report Look Professional
 
-- [x] Create requirements.txt
-- [x] Create Procfile
-- [x] Update app.py to use environment variables for SECRET_KEY
-- [x] Update app.py to use PORT environment variable
-- [ ] Deploy to Heroku or similar platform
-- [ ] Set environment variables on the platform
-- [ ] Test the deployed app
+## Tasks
+- [x] Link to existing style.css in reports_all_students.html head
+- [x] Restructure HTML to use professional layout with containers and cards
+- [x] Apply modern styling with gradients, shadows, and responsive design
+- [x] Update table styling to match professional theme
+- [x] Add header with title and meta information
+- [x] Style student blocks as cards with hover effects
+- [x] Add footer with back link
+- [x] Ensure print-friendly styling

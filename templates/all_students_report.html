@@ -3,94 +3,914 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>All Students Report</title>
+    <title>Academic Performance Report - Student Score Management System</title>
+    <meta name="description" content="Comprehensive academic performance report with detailed analytics and student rankings.">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body{font-family:Segoe UI,Arial,sans-serif;margin:20px;color:#333}
-        h1{margin-bottom:6px}
-        .meta{margin-bottom:20px}
-        table{width:100%;border-collapse:collapse;font-size:14px}
-        th,td{border:1px solid #ddd;padding:6px;text-align:center}
-        th{background:#f8f9fa}
-        .right{text-align:right}
-        .print-btn{position:fixed;right:20px;top:20px}
-        @media print{
-            .print-btn, a { display: none !important; }
-            tr { page-break-inside: avoid; }
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --info-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #f093fb;
+            --text-primary: #2c3e50;
+            --text-secondary: #7f8c8d;
+            --text-light: #bdc3c7;
+            --bg-light: #f8f9fa;
+            --bg-white: #ffffff;
+            --shadow-light: rgba(0, 0, 0, 0.1);
+            --shadow-medium: rgba(0, 0, 0, 0.15);
+            --shadow-heavy: rgba(0, 0, 0, 0.25);
+
+            --border-radius-sm: 8px;
+            --border-radius-md: 12px;
+            --border-radius-lg: 16px;
+            --border-radius-xl: 20px;
+
+            --transition-fast: 0.2s ease;
+            --transition-normal: 0.3s ease;
+            --transition-slow: 0.5s ease;
         }
-        .student-block{margin-bottom:18px}
-        .student-block h2{margin:6px 0}
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--primary-gradient);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            background-attachment: fixed;
+        }
+
+        .report-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: var(--border-radius-xl);
+            box-shadow: 0 25px 50px var(--shadow-heavy);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .report-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: var(--primary-gradient);
+        }
+
+        .report-header {
+            background: var(--primary-gradient);
+            color: rgba(240, 228, 228, 0.966);
+            padding: 50px 40px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .report-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .report-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .header-info h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            text-shadow: 0 3px 6px rgba(0,0,0,0.4);
+            letter-spacing: -0.5px;
+        }
+
+        .header-meta {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            opacity: 0.95;
+        }
+
+        .meta-item i {
+            font-size: 1.1rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all var(--transition-normal);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .action-btn.primary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .action-btn.primary:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .action-btn.secondary {
+            background: white;
+            color: var(--primary-color);
+            border: 1px solid white;
+        }
+
+        .action-btn.secondary:hover {
+            background: var(--bg-light);
+            transform: translateY(-2px);
+        }
+
+        .filters-section {
+            background: var(--bg-light);
+            padding: 25px 40px;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .filters-form {
+            display: flex;
+            gap: 20px;
+            align-items: end;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 200px;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .filter-input {
+            padding: 12px 16px;
+            border: 2px solid rgba(0,0,0,0.1);
+            border-radius: var(--border-radius-md);
+            font-size: 0.95rem;
+            transition: all var(--transition-normal);
+            background: white;
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .filter-btn {
+            padding: 12px 24px;
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .filter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .clear-btn {
+            padding: 12px 24px;
+            background: white;
+            color: var(--text-secondary);
+            border: 2px solid rgba(0,0,0,0.1);
+            border-radius: var(--border-radius-md);
+            font-weight: 600;
+            text-decoration: none;
+            transition: all var(--transition-normal);
+        }
+
+        .clear-btn:hover {
+            background: var(--bg-light);
+            border-color: var(--text-secondary);
+            color: var(--text-primary);
+        }
+
+        .report-content {
+            padding: 40px;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: var(--border-radius-lg);
+            padding: 25px;
+            box-shadow: 0 8px 25px var(--shadow-light);
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: all var(--transition-normal);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--primary-gradient);
+            transform: scaleX(0);
+            transition: transform var(--transition-normal);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px var(--shadow-medium);
+        }
+
+        .stat-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .stat-card:nth-child(1) .stat-icon { background: var(--success-gradient); color: white; }
+        .stat-card:nth-child(2) .stat-icon { background: var(--warning-gradient); color: white; }
+        .stat-card:nth-child(3) .stat-icon { background: var(--info-gradient); color: white; }
+        .stat-card:nth-child(4) .stat-icon { background: var(--secondary-gradient); color: white; }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .students-section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title i {
+            color: var(--primary-color);
+        }
+
+        .student-card {
+            background: white;
+            border-radius: var(--border-radius-lg);
+            padding: 35px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px var(--shadow-light);
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: all var(--transition-normal);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .student-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: var(--primary-gradient);
+            border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+        }
+
+        .student-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(102,126,234,0.05) 0%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(30px, -30px);
+        }
+
+        .student-card:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 20px 45px var(--shadow-medium);
+        }
+
+        .student-card:hover::after {
+            transform: translate(20px, -40px) scale(1.2);
+        }
+
+        .student-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .student-info h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .student-meta {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .meta-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .meta-badge.rank {
+            background: var(--success-gradient);
+            color: white;
+        }
+
+        .meta-badge.average {
+            background: var(--warning-gradient);
+            color: white;
+        }
+
+        .meta-badge.grade {
+            background: var(--info-gradient);
+            color: white;
+        }
+
+        .meta-badge.status {
+            background: var(--secondary-gradient);
+            color: white;
+        }
+
+        .performance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            border-radius: var(--border-radius-md);
+            overflow: hidden;
+            box-shadow: 0 4px 15px var(--shadow-light);
+        }
+
+        .performance-table thead {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        .performance-table th {
+            padding: 15px 12px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .performance-table td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            font-size: 0.9rem;
+        }
+
+        .performance-table tbody tr:hover {
+            background: rgba(102, 126, 234, 0.02);
+        }
+
+        .performance-table tfoot {
+            background: var(--bg-light);
+            font-weight: 600;
+        }
+
+        .performance-table tfoot th {
+            text-align: right;
+            padding-right: 20px;
+        }
+
+        .subject-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            text-align: left;
+        }
+
+        .score-cell {
+            font-weight: 500;
+        }
+
+        .grade-cell {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .grade-A { color: #27ae60; }
+        .grade-B { color: #3498db; }
+        .grade-C { color: #f39c12; }
+        .grade-D { color: #e67e22; }
+        .grade-F { color: #e74c3c; }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 40px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .empty-state p {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+        }
+
+        .report-footer {
+            background: var(--bg-light);
+            padding: 30px 40px;
+            border-top: 1px solid rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .footer-info {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .footer-actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color var(--transition-normal);
+        }
+
+        .footer-link:hover {
+            color: var(--secondary-color);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(120deg); }
+            66% { transform: translate(-20px, 20px) rotate(240deg); }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .slide-in-left {
+            animation: slideInLeft 0.8s ease-out;
+        }
+
+        .slide-in-right {
+            animation: slideInRight 0.8s ease-out;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @media print {
+            body { background: white !important; }
+            .report-container { box-shadow: none !important; border: none !important; }
+            .filters-section, .report-footer, .action-btn { display: none !important; }
+            .report-header { background: white !important; color: black !important; }
+            .report-header::before { display: none !important; }
+        }
+
+        @media (max-width: 1024px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+
+            .header-info h1 {
+                font-size: 2.2rem;
+            }
+
+            .summary-stats {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 15px; }
+
+            .report-header {
+                padding: 30px 20px 20px;
+            }
+
+            .header-info h1 {
+                font-size: 1.8rem;
+            }
+
+            .filters-section {
+                padding: 20px;
+            }
+
+            .filters-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-group {
+                min-width: auto;
+            }
+
+            .report-content {
+                padding: 20px;
+            }
+
+            .student-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .performance-table {
+                font-size: 0.8rem;
+            }
+
+            .performance-table th,
+            .performance-table td {
+                padding: 8px 6px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-meta {
+                flex-direction: column;
+                gap: 10px;
+                align-items: center;
+            }
+
+            .summary-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .student-meta {
+                flex-direction: column;
+                gap: 8px;
+                align-items: flex-start;
+            }
+
+            .performance-table th:nth-child(6),
+            .performance-table td:nth-child(6),
+            .performance-table th:nth-child(7),
+            .performance-table td:nth-child(7) {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
-    <button class="print-btn" onclick="window.print()">Print</button>
-    <h1>All Students Report</h1>
-    <p class="meta">Generated at: {{ now }}</p>
-
-    <form method="get" style="margin-bottom:12px;display:flex;gap:10px;align-items:center;">
-        <label>Class: <input type="text" name="class" value="{{ class_filter }}" placeholder="e.g. SS2"></label>
-        <label>Student ID: <input type="text" name="student_id" value="{{ student_id_filter }}" placeholder="e.g. 21/1/520"></label>
-        <button type="submit">Filter</button>
-        <a href="{{ url_for('all_students_report') }}" style="margin-left:8px;">Clear</a>
-        <div style="margin-left:auto">
-            <a href="{{ url_for('export_csv') }}?class={{ class_filter }}&student_id={{ student_id_filter }}">Export Summary CSV (filtered)</a> |
-            <a href="{{ url_for('export_detailed_csv') }}?class={{ class_filter }}&student_id={{ student_id_filter }}">Export Detailed CSV (filtered)</a>
+    <div class="report-container fade-in-up">
+        <div class="report-header">
+            <div class="header-content">
+                <div class="header-info">
+                    <h1><i class="fas fa-chart-line"></i> Academic Performance Report</h1>
+                    <div class="header-meta">
+                        <div class="meta-item">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Generated: {{ now }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-school"></i>
+                            <span>Multi-School System</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-users"></i>
+                            <span>Comprehensive Analytics</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="action-btn primary" onclick="window.print()">
+                        <i class="fas fa-print"></i> Print Report
+                    </button>
+                    <a href="{{ url_for('reports_export_csv', class=class_filter, student_id=student_id_filter) }}" class="action-btn secondary">
+                        <i class="fas fa-download"></i> Export CSV
+                    </a>
+                </div>
+            </div>
         </div>
-    </form>
 
-    {% for student in students %}
-    <div class="student-block">
-        {% set p = positions.get(student.student_id) %}
-    <h2>{{ student.first_name }} ({{ student.student_id }}) — Class: {{ student.class_name }}{% if p %} — Rank: {{ p.pos }}/{{ p.size }}{% endif %}</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Subject</th>
-                    <th>Test1</th>
-                    <th>Test2</th>
-                    <th>Test3</th>
-                    <th>Total Tests</th>
-                    <th>CBT</th>
-                    <th>Theory</th>
-                    <th>Total Exam</th>
-                    <th>Overall</th>
-                    <th>Grade</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for subj, s in student.subjects.items() %}
-                <tr>
-                    {% set t = s.tests if s.tests is iterable and s.tests|length == 3 else [] %}
-                    <td>{{ subj }}</td>
-                    <td>{{ t[0] if t else '' }}</td>
-                    <td>{{ t[1] if t else '' }}</td>
-                    <td>{{ t[2] if t else '' }}</td>
-                    <td>{{ s.get('total_test', s.get('tests','')) }}</td>
-                    <td>{{ s.get('cbt','') }}</td>
-                    <td>{{ s.get('theory_exam', s.get('exam','')) }}</td>
-                    <td>{{ s.get('total_exam', s.get('exam','')) }}</td>
-                    <td>{{ s.get('overall_mark', s.get('total','')) }}</td>
-                    <td>{{ s.get('grade','') }}</td>
-                    <td>{{ s.get('status','') }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-            <tfoot>
-                <tr>
-                    <th colspan="8" class="right">Average per subject</th>
-                    <th>{{ student.average_marks }}</th>
-                    <th>{{ student.Grade }}</th>
-                    <th>{{ student.Status }}</th>
-                </tr>
-            </tfoot>
-        </table>
-        {% set pos = positions.get(student.student_id) %}
-        {% if pos %}
-            <div style="margin-top:6px;font-weight:600;">Position: {{ pos.pos }} out of {{ pos.size }} in class {{ pos.class }}</div>
-        {% endif %}
+        <div class="filters-section">
+            <form class="filters-form" method="get">
+                <div class="filter-group">
+                    <label class="filter-label">Filter by Class</label>
+                    <input type="text" class="filter-input" name="class" value="{{ class_filter }}" placeholder="e.g., Grade 10A, SS2">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Filter by Student ID</label>
+                    <input type="text" class="filter-input" name="student_id" value="{{ student_id_filter }}" placeholder="e.g., STU001, 21/1/520">
+                </div>
+                <button type="submit" class="filter-btn">
+                    <i class="fas fa-filter"></i> Apply Filters
+                </button>
+                <a href="{{ url_for('all_students_report') }}" class="clear-btn">
+                    <i class="fas fa-times"></i> Clear Filters
+                </a>
+            </form>
+        </div>
+
+        <div class="report-content">
+            {% if students %}
+                <div class="summary-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-value">{{ students|length }}</div>
+                        <div class="stat-label">Total Students</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <div class="stat-value">{{ "%.1f"|format((students|map(attribute='average_marks')|map('float')|sum) / (students|length)) }}%</div>
+                        <div class="stat-label">Average Performance</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <div class="stat-value">{{ students|selectattr('Grade', 'equalto', 'A')|list|length }}</div>
+                        <div class="stat-label">Grade A Students</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-value">{{ students|selectattr('Status', 'equalto', 'Pass')|list|length }}</div>
+                        <div class="stat-label">Passing Students</div>
+                    </div>
+                </div>
+
+                <div class="students-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-user-graduate"></i>
+                        Student Performance Details
+                    </h2>
+
+                    {% for student in students %}
+                        <div class="student-card">
+                            <div class="student-header">
+                                <div class="student-info">
+                                    <h3>{{ student.first_name }} {{ student.student_id }}</h3>
+                                    <div class="student-meta">
+                                        <span class="meta-badge">
+                                            <i class="fas fa-school"></i>
+                                            {{ student.class_name }}
+                                        </span>
+                                        {% set p = positions.get(student.student_id) %}
+                                        {% if p %}
+                                            <span class="meta-badge rank">
+                                                <i class="fas fa-trophy"></i>
+                                                Rank {{ p.pos }} of {{ p.size }}
+                                            </span>
+                                        {% endif %}
+                                        <span class="meta-badge average">
+                                            <i class="fas fa-chart-bar"></i>
+                                            {{ "%.1f"|format(student.average_marks) }}%
+                                        </span>
+                                        <span class="meta-badge grade grade-{{ student.Grade }}">
+                                            <i class="fas fa-medal"></i>
+                                            Grade {{ student.Grade }}
+                                        </span>
+                                        <span class="meta-badge status">
+                                            <i class="fas fa-{{ 'check-circle' if student.Status == 'Pass' else 'times-circle' }}"></i>
+                                            {{ student.Status }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <table class="performance-table">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align: left; width: 15%;">Subject</th>
+                                        <th>Test1</th>
+                                        <th>Test2</th>
+                                        <th>Test3</th>
+                                        <th>Total Tests</th>
+                                        <th>CBT</th>
+                                        <th>Theory</th>
+                                        <th>Total Exam</th>
+                                        <th>Overall</th>
+                                        <th>Grade</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for subject_name, subject_data in student.subjects.items() %}
+                                        <tr>
+                                            <td class="subject-name">{{ subject_name }}</td>
+                                            <td class="score-cell">{{ subject_data.tests[0] if subject_data.tests else 0 }}</td>
+                                            <td class="score-cell">{{ subject_data.tests[1] if subject_data.tests else 0 }}</td>
+                                            <td class="score-cell">{{ subject_data.tests[2] if subject_data.tests else 0 }}</td>
+                                            <td class="score-cell">{{ subject_data.total_test }}</td>
+                                            <td class="score-cell">{{ subject_data.cbt }}</td>
+                                            <td class="score-cell">{{ subject_data.theory_exam }}</td>
+                                            <td class="score-cell">{{ subject_data.total_exam }}</td>
+                                            <td class="score-cell">{{ subject_data.overall_mark }}</td>
+                                            <td class="grade-cell grade-{{ subject_data.grade }}">{{ subject_data.grade }}</td>
+                                            <td>{{ student.Status }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th colspan="8" style="text-align: right; padding-right: 20px;">Average per subject</th>
+                                        <th>{{ "%.1f"|format(student.average_marks) }}</th>
+                                        <th class="grade-{{ student.Grade }}">{{ student.Grade }}</th>
+                                        <th>{{ student.Status }}</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-users"></i>
+                    <h3>No Students Found</h3>
+                    <p>No students match the current filters. Try adjusting your search criteria.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="report-footer">
+            <div class="footer-info">
+                <i class="fas fa-info-circle"></i>
+                Report generated by Student Score Management System
+            </div>
+            <div class="footer-actions">
+                <a href="{{ url_for('view_students') }}" class="footer-link">
+                    <i class="fas fa-arrow-left"></i> Back to Students
+                </a>
+            </div>
+        </div>
     </div>
-    {% endfor %}
-
-    <p class="right"><a href="{{ url_for('view_students') }}">Back to students</a></p>
 </body>
 </html>

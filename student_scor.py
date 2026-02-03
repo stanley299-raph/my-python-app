@@ -12,6 +12,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, IntegerField, TextAreaField, SelectField, validators
 from flask_wtf.csrf import CSRFProtect
+import sqlite3
 import json
 import csv
 import re
@@ -21,31 +22,81 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 import os
 
+def init_db():
+    """Initialize the SQLite database and create tables if they don't exist."""
+    conn = sqlite3.connect('student_score.db')
+    c = conn.cursor()
+
+    # Create users table
+    c.execute('''CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT UNIQUE NOT NULL,
+                    password_hash TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )''')
+
+    # Create students table
+    c.execute('''CREATE TABLE IF NOT EXISTS students (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id TEXT NOT NULL,
+                    student_id TEXT NOT NULL,
+                    firstname TEXT NOT NULL,
+                    classname TEXT NOT NULL,
+                    number_of_subject INTEGER NOT NULL,
+                    subjects TEXT NOT NULL,
+                    scores TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(user_id, student_id)
+                )''')
+
+    # Create reports table
+    c.execute('''CREATE TABLE IF NOT EXISTS reports (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id TEXT NOT NULL,
+                    description TEXT NOT NULL,
+                    timestamp TEXT NOT NULL,
+                    status TEXT DEFAULT 'unread',
+                    read_at TEXT
+                )''')
+
+    conn.commit()
+    conn.close()
+
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'your_secret_key_here')  # Use environment variable for production
 
+# Initialize database
+init_db()
+
 def load_users():
     """
-    Load user credentials from JSON file.
+    Load user credentials from SQLite database.
 
     Returns:
         dict: Dictionary of username -> hashed_password pairs
     """
-    try:
-        with open("users.json", "r") as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return {}
+    conn = sqlite3.connect('student_score.db')
+    c = conn.cursor()
+    c.execute('SELECT username, password_hash FROM users')
+    users = {row[0]: row[1] for row in c.fetchall()}
+    conn.close()
+    return users
 
 def save_users(users):
     """
-    Save user credentials to JSON file.
+    Save user credentials to SQLite database.
 
     Args:
         users (dict): Dictionary of username -> hashed_password pairs
     """
-    with open("users.json", "w") as f:
-        json.dump(users, f)
+    conn = sqlite3.connect('student_score.db')
+    c = conn.cursor()
+    c.execute('DELETE FROM users')  # Clear existing users
+    for username, password_hash in users.items():
+        c.execute('INSERT INTO users (username, password_hash) VALUES (?, ?)',
+                 (username, password_hash))
+    conn.commit()
+    conn.close()
 
 def hash_password(password):
     """
@@ -123,50 +174,128 @@ def id_exists(user_students, student_id):
     sid = student_id.strip().lower()
     return any(isinstance(student, dict) and student.get("student_id", "").strip().lower() == sid for student in user_students)
 
-def save_to_json(students, filename="students.json"):
-    with open(filename, "w") as file:
-        json.dump(students, file, indent=4)
+def load_students(user_id):
+    """
+    Load students for a specific user from SQLite database.
 
-def load_from_json(filename="students.json"):
-    try:
-        with open(filename, "r") as file:
-            data = json.load(file)
-            if not isinstance(data, dict):
-                return {}
-            return data
-    except (FileNotFoundError, json.JSONDecodeError):
-        return {}
+    Args:
+        user_id (str): The user ID to load students for
 
-# Data structure: users -> user_id -> students -> student_id -> student_data
-students = load_from_json()
-if not students:
-    students = {}
-    save_to_json(students)
+    Returns:
+        dict: Dictionary of student_id -> student_data
+    """
+    conn = sqlite3.connect('student_score.db')
+    c = conn.cursor()
+    c.execute('SELECT student_id, firstname, classname, number_of_subject, subjects, scores FROM students WHERE user_id = ?',
+             (user_id,))
+    students_data = {}
+    for row in c.fetchall():
+        student_id, firstname, classname, number_of_subject, subjects_str, scores_str = row
+        subjects = json.loads(subjects_str) if subjects_str else []
+        scores = json.loads(scores_str) if scores_str else {}
+        students_data[student_id] = {
+            'firstname': firstname,
+            'classname': classname,
+            'number_of_subject': number_of_subject,
+            'subjects': subjects,
+            'scores': scores
+        }
+    conn.close()
+    return students_data
+
+def save_student(user_id, student_id, student_data):
+    """
+    Save a student to SQLite database.
+
+    Args:
+        user_id (str): The user ID
+        student_id (str): The student ID
+        student_data (dict): The student data
+    """
+    conn = sqlite3.connect('student_score.db')
+    c = conn.cursor()
+    subjects_str = json.dumps(student_data['subjects'])
+    scores_str = json.dumps(student_data['scores'])
+    c.execute('''INSERT OR REPLACE INTO students
+                 (user_id, student_id, firstname, classname, number_of_subject, subjects, scores)
+                 VALUES (?, ?, ?, ?, ?, ?, ?)''',
+             (user_id, student_id, student_data['firstname'], student_data['classname'],
+              student_data['number_of_subject'], subjects_str, scores_str))
+    conn.commit()
+    conn.close()
+
+def delete_student(user_id, student_id):
+    """
+    Delete a student from SQLite database.
+
+    Args:
+        user_id (str): The user ID
+        student_id (str): The student ID
+    """
+    conn = sqlite3.connect('student_score.db')
+    c = conn.cursor()
+    c.execute('DELETE FROM students WHERE user_id = ? AND student_id = ?',
+             (user_id, student_id))
+    conn.commit()
+    conn.close()
 
 def load_reports():
     """
-    Load reports from JSON file.
+    Load reports from SQLite database.
 
     Returns:
         list: List of report dictionaries
     """
-    try:
-        with open("reports.json", "r") as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return []
+    conn = sqlite3.connect('student_score.db')
+    c = conn.cursor()
+    c.execute('SELECT id, user_id, description, timestamp, status, read_at FROM reports ORDER BY timestamp DESC')
+    reports = []
+    for row in c.fetchall():
+        report_id, user_id, description, timestamp, status, read_at = row
+        reports.append({
+            'id': report_id,
+            'user_id': user_id,
+            'description': description,
+            'timestamp': timestamp,
+            'status': status,
+            'read_at': read_at
+        })
+    conn.close()
+    return reports
 
-def save_reports(reports):
+def save_report(report):
     """
-    Save reports to JSON file.
+    Save a report to SQLite database.
 
     Args:
-        reports (list): List of report dictionaries
+        report (dict): Report dictionary
     """
-    with open("reports.json", "w") as f:
-        json.dump(reports, f, indent=4)
+    conn = sqlite3.connect('student_score.db')
+    c = conn.cursor()
+    c.execute('INSERT INTO reports (user_id, description, timestamp, status) VALUES (?, ?, ?, ?)',
+             (report['user_id'], report['description'], report['timestamp'], report['status']))
+    conn.commit()
+    conn.close()
 
-@app.route('/', methods=['GET', 'POST'])
+def mark_report_read(report_id):
+    """
+    Mark a report as read by updating the read_at timestamp.
+
+    Args:
+        report_id (int): The ID of the report to mark as read
+    """
+    conn = sqlite3.connect('student_score.db')
+    c = conn.cursor()
+    c.execute('UPDATE reports SET status = ?, read_at = ? WHERE id = ?',
+             ('read', datetime.now().isoformat(), report_id))
+    conn.commit()
+    conn.close()
+
+@app.route('/', methods=['GET'])
+def home():
+    return render_template('home.html')
+
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
@@ -201,7 +330,7 @@ def signup():
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)
-    return redirect(url_for('login'))
+    return redirect(url_for('home'))
 
 @app.route('/menu')
 def menu():
@@ -234,10 +363,7 @@ def add_student():
             return redirect(url_for('add_student'))
 
         user_id = session['user_id']
-        if user_id not in students:
-            students[user_id] = {}
-
-        students[user_id][student_id] = {
+        student_data = {
             'firstname': firstname,
             'classname': classname,
             'number_of_subject': number_of_subject,
@@ -245,7 +371,7 @@ def add_student():
             'scores': {}
         }
 
-        save_to_json(students)
+        save_student(user_id, student_id, student_data)
         flash('Student added successfully! Now enter scores for each subject.', 'success')
         return redirect(url_for('enter_scores', student_id=student_id))
 
@@ -257,7 +383,7 @@ def view_students():
         return redirect(url_for('login'))
 
     user_id = session['user_id']
-    user_students = students.get(user_id, {})
+    user_students = load_students(user_id)
 
     # Transform data to match template expectations
     students_list = []
@@ -345,18 +471,19 @@ def edit_student():
         return redirect(url_for('login'))
 
     user_id = session['user_id']
-    user_students = students.get(user_id, {})
+    user_students = load_students(user_id)
 
     if request.method == 'POST':
         student_id = request.form.get('student_id')
         if student_id and student_id in user_students:
             # Update student data
-            user_students[student_id]['firstname'] = request.form.get('firstname', '')
-            user_students[student_id]['classname'] = request.form.get('classname', '')
-            user_students[student_id]['number_of_subject'] = int(request.form.get('number_of_subject', 0))
-            user_students[student_id]['subjects'] = [s.strip() for s in re.split(r'[,\s]+', request.form.get('subjects', '')) if s.strip()]
+            student_data = user_students[student_id]
+            student_data['firstname'] = request.form.get('firstname', '')
+            student_data['classname'] = request.form.get('classname', '')
+            student_data['number_of_subject'] = int(request.form.get('number_of_subject', 0))
+            student_data['subjects'] = [s.strip() for s in re.split(r'[,\s]+', request.form.get('subjects', '')) if s.strip()]
 
-            save_to_json(students)
+            save_student(user_id, student_id, student_data)
             flash('Student updated successfully!')
             return redirect(url_for('view_students'))
         else:
@@ -376,13 +503,12 @@ def delete_student():
         return redirect(url_for('login'))
 
     user_id = session['user_id']
-    user_students = students.get(user_id, {})
+    user_students = load_students(user_id)
 
     if request.method == 'POST':
         student_id = request.form.get('student_id')
         if student_id and student_id in user_students:
-            del user_students[student_id]
-            save_to_json(students)
+            delete_student(user_id, student_id)
             flash('Student deleted successfully!')
             return redirect(url_for('view_students'))
         else:
@@ -396,7 +522,7 @@ def search_student():
         return redirect(url_for('login'))
 
     user_id = session['user_id']
-    user_students = students.get(user_id, {})
+    user_students = load_students(user_id)
 
     search_results = []
     search_query = ''
@@ -450,7 +576,7 @@ def rank_students():
         return redirect(url_for('login'))
 
     user_id = session['user_id']
-    user_students = students.get(user_id, {})
+    user_students = load_students(user_id)
 
     class_filter = request.args.get('class', '').strip()
 
@@ -615,11 +741,12 @@ def student_report():
     student_id = request.args.get('student_id')
     user_id = session['user_id']
 
-    if not student_id or user_id not in students or student_id not in students[user_id]:
+    user_students = load_students(user_id)
+    if not student_id or student_id not in user_students:
         flash('Student not found.')
         return redirect(url_for('view_students'))
 
-    student_data = students[user_id][student_id]
+    student_data = user_students[student_id]
     scores = student_data.get('scores', {})
 
     if scores:
@@ -648,7 +775,7 @@ def student_report():
 
     # Build positions across this user's students
     students_list = []
-    for sid, sdata in students[user_id].items():
+    for sid, sdata in user_students.items():
         sscores = sdata.get('scores', {})
         if sscores:
             overall_marks = [subj_data.get('overall_mark', 0) for subj_data in sscores.values() if isinstance(subj_data, dict)]
@@ -683,7 +810,7 @@ def all_students_report():
         return redirect(url_for('login'))
 
     user_id = session['user_id']
-    user_students = students.get(user_id, {})
+    user_students = load_students(user_id)
     class_filter = request.args.get('class', '').strip()
     student_id_filter = request.args.get('student_id', '').strip()
 
@@ -800,15 +927,13 @@ def report_issue():
     if request.method == 'POST':
         issue_description = request.form.get('issue_description', '').strip()
         if issue_description:
-            reports = load_reports()
             report = {
                 'user_id': session['user_id'],
                 'description': issue_description,
                 'timestamp': datetime.now().isoformat(),
                 'status': 'unread'
             }
-            reports.append(report)
-            save_reports(reports)
+            save_report(report)
             flash('Issue reported successfully! Thank you for your feedback.', 'success')
             return redirect(url_for('menu'))
         else:
@@ -828,6 +953,20 @@ def view_reports():
 
     reports = load_reports()
     return render_template('view_reports.html', reports=reports)
+
+@app.route('/mark_report_read/<int:report_id>')
+def mark_report_read_route(report_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    # Only allow admin user to mark reports as read
+    if session['user_id'] != 'osondu':
+        flash('Access denied. Only administrators can mark reports as read.', 'error')
+        return redirect(url_for('view_reports'))
+
+    mark_report_read(report_id)
+    flash('Report marked as read.', 'success')
+    return redirect(url_for('view_reports'))
 
 if __name__ == '__main__':
     app.run(debug=True)

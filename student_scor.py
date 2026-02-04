@@ -408,14 +408,14 @@ def view_students():
             average_marks = 0
 
         # Determine grade
-        if average_marks >= 90:
+        if average_marks >= 70:
             grade = 'A'
             grade_a_count += 1
-        elif average_marks >= 80:
-            grade = 'B'
-        elif average_marks >= 70:
-            grade = 'C'
         elif average_marks >= 60:
+            grade = 'B'
+        elif average_marks >= 50:
+            grade = 'C'
+        elif average_marks >= 40:
             grade = 'D'
         else:
             grade = 'F'
@@ -544,13 +544,13 @@ def search_student():
                         average_marks = 0
 
                     # Determine grade
-                    if average_marks >= 90:
+                    if average_marks >= 70:
                         grade = 'A'
-                    elif average_marks >= 80:
-                        grade = 'B'
-                    elif average_marks >= 70:
-                        grade = 'C'
                     elif average_marks >= 60:
+                        grade = 'B'
+                    elif average_marks >= 50:
+                        grade = 'C'
+                    elif average_marks >= 40:
                         grade = 'D'
                     else:
                         grade = 'F'
@@ -598,13 +598,13 @@ def rank_students():
             average_marks = 0
 
         # Determine grade
-        if average_marks >= 90:
+        if average_marks >= 70:
             grade = 'A'
-        elif average_marks >= 80:
-            grade = 'B'
-        elif average_marks >= 70:
-            grade = 'C'
         elif average_marks >= 60:
+            grade = 'B'
+        elif average_marks >= 50:
+            grade = 'C'
+        elif average_marks >= 40:
             grade = 'D'
         else:
             grade = 'F'
@@ -687,21 +687,21 @@ def enter_scores():
                     calculated_test_grade = 'A'
                 elif calculated_total_test >= 24:
                     calculated_test_grade = 'B'
-                elif calculated_total_test >= 21:
+                elif calculated_total_test >= 20:
                     calculated_test_grade = 'C'
-                elif calculated_total_test >= 18:
+                elif calculated_total_test >= 15:
                     calculated_test_grade = 'D'
                 else:
                     calculated_test_grade = 'F'
 
                 # Determine overall grade based on overall mark
-                if calculated_overall_mark >= 90:
+                if calculated_overall_mark >= 70:
                     calculated_grade = 'A'
-                elif calculated_overall_mark >= 80:
-                    calculated_grade = 'B'
-                elif calculated_overall_mark >= 70:
-                    calculated_grade = 'C'
                 elif calculated_overall_mark >= 60:
+                    calculated_grade = 'B'
+                elif calculated_overall_mark >= 50:
+                    calculated_grade = 'C'
+                elif calculated_overall_mark >= 40:
                     calculated_grade = 'D'
                 else:
                     calculated_grade = 'F'
@@ -756,13 +756,13 @@ def student_report():
     else:
         average_marks = 0
 
-    if average_marks >= 90:
+    if average_marks >= 70:
         grade = 'A'
-    elif average_marks >= 80:
-        grade = 'B'
-    elif average_marks >= 70:
-        grade = 'C'
     elif average_marks >= 60:
+        grade = 'B'
+    elif average_marks >= 50:
+        grade = 'C'
+    elif average_marks >= 40:
         grade = 'D'
     else:
         grade = 'F'
@@ -834,13 +834,13 @@ def all_students_report():
             average_marks = 0
 
         # Determine grade
-        if average_marks >= 90:
+        if average_marks >= 70:
             grade = 'A'
-        elif average_marks >= 80:
-            grade = 'B'
-        elif average_marks >= 70:
-            grade = 'C'
         elif average_marks >= 60:
+            grade = 'B'
+        elif average_marks >= 50:
+            grade = 'C'
+        elif average_marks >= 40:
             grade = 'D'
         else:
             grade = 'F'

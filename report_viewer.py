@@ -4,6 +4,27 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 import sqlite3
 import os
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "reports.db")
+
+def init_db():
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS reports (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id TEXT,
+            description TEXT,
+            timestamp TEXT,
+            status TEXT,
+            read_at TEXT
+        )
+    """)
+
+    conn.commit()
+    conn.close()
+
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'your_secret_key_here')
 
@@ -14,7 +35,7 @@ def load_reports():
     Returns:
         list: List of report dictionaries
     """
-    conn = sqlite3.connect('student_score.db')
+    conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     c.execute('SELECT id, user_id, description, timestamp, status, read_at FROM reports ORDER BY timestamp DESC')
     reports = []
@@ -54,6 +75,8 @@ def view_reports():
 def logout():
     session.pop('user_id', None)
     return redirect(url_for('login'))
+
+init_db()
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5001))

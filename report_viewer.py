@@ -28,6 +28,8 @@ def init_db():
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'your_secret_key_here')
 
+init_db()
+
 def load_reports():
     """
     Load reports from SQLite database.

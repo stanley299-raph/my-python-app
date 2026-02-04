@@ -78,7 +78,9 @@ def logout():
     session.pop('user_id', None)
     return redirect(url_for('login'))
 
-init_db()
+@app.route('/sitemap.xml')
+def sitemap():
+    return app.send_static_file('sitemap.xml')
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5001))

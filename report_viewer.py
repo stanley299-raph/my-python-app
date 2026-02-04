@@ -1,6 +1,6 @@
 """Report Viewer - Separate web application for viewing reported issues."""
 
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, send_from_directory
 import sqlite3
 import os
 
@@ -80,7 +80,7 @@ def logout():
 
 @app.route('/sitemap.xml')
 def sitemap():
-    return app.send_static_file('sitemap.xml')
+    return send_from_directory(BASE_DIR, 'sitemap.xml')
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5001))

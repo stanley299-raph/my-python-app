@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Menu - Student Score Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Student Menu</h1>
+        <p>Welcome, {{ session['user_id'] }}!</p>
+        <ul>
+            <li><a href="{{ url_for('my_report') }}">View My Report</a></li>
+            <li><a href="{{ url_for('change_password') }}">Change Password</a></li>
+            <li><a href="{{ url_for('report_issue') }}">Report Issue</a></li>
+            <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        </ul>
+    </div>
+</body>
+</html>

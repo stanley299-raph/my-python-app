@@ -1,0 +1,259 @@
+2026-02-05 20:48:45,857 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.112:5000
+2026-02-05 20:48:45,858 - INFO - [33mPress CTRL+C to quit[0m
+2026-02-05 20:48:52,944 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.112:5000
+2026-02-05 20:48:52,944 - INFO - [33mPress CTRL+C to quit[0m
+2026-02-05 20:49:07,799 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.112:5000
+2026-02-05 20:49:07,804 - INFO - [33mPress CTRL+C to quit[0m
+2026-02-05 20:49:30,937 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.112:5000
+2026-02-05 20:49:30,937 - INFO - [33mPress CTRL+C to quit[0m
+2026-02-05 20:51:53,804 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.112:5000
+2026-02-05 20:51:53,804 - INFO - [33mPress CTRL+C to quit[0m
+2026-02-05 20:51:53,814 - INFO -  * Restarting with stat
+2026-02-05 20:51:54,731 - WARNING -  * Debugger is active!
+2026-02-05 20:51:54,740 - INFO -  * Debugger PIN: 988-619-374
+2026-02-05 20:53:12,817 - INFO -  * Detected change in 'c:\\Aka\\my.py\\student_scor.py', reloading
+2026-02-05 20:53:12,903 - INFO -  * Restarting with stat
+2026-02-05 20:53:13,994 - WARNING -  * Debugger is active!
+2026-02-05 20:53:14,005 - INFO -  * Debugger PIN: 988-619-374
+2026-02-05 20:53:26,217 - INFO -  * Detected change in 'c:\\Aka\\my.py\\student_scor.py', reloading
+2026-02-05 20:53:26,287 - INFO -  * Restarting with stat
+2026-02-05 20:53:27,172 - WARNING -  * Debugger is active!
+2026-02-05 20:53:27,176 - INFO -  * Debugger PIN: 988-619-374
+2026-02-05 20:54:18,146 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.112:5000
+2026-02-05 20:54:18,146 - INFO - [33mPress CTRL+C to quit[0m
+2026-02-05 20:54:18,149 - INFO -  * Restarting with stat
+2026-02-05 20:54:18,976 - WARNING -  * Debugger is active!
+2026-02-05 20:54:18,980 - INFO -  * Debugger PIN: 988-619-374
+2026-02-05 20:54:37,164 - INFO -  * Detected change in 'c:\\Aka\\my.py\\student_scor.py', reloading
+2026-02-05 20:54:37,270 - INFO -  * Restarting with stat
+2026-02-05 20:54:38,348 - WARNING -  * Debugger is active!
+2026-02-05 20:54:38,352 - INFO -  * Debugger PIN: 988-619-374
+2026-02-05 20:54:42,434 - INFO -  * Detected change in 'c:\\Aka\\my.py\\student_scor.py', reloading
+2026-02-05 20:54:42,599 - INFO -  * Restarting with stat
+2026-02-05 20:54:43,585 - WARNING -  * Debugger is active!
+2026-02-05 20:54:43,589 - INFO -  * Debugger PIN: 988-619-374
+2026-02-05 20:54:46,656 - INFO -  * Detected change in 'c:\\Aka\\my.py\\student_scor.py', reloading
+2026-02-05 20:54:46,778 - INFO -  * Restarting with stat
+2026-02-05 20:54:47,748 - WARNING -  * Debugger is active!
+2026-02-05 20:54:47,754 - INFO -  * Debugger PIN: 988-619-374
+2026-02-05 20:58:15,704 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.112:5000
+2026-02-05 20:58:15,704 - INFO - [33mPress CTRL+C to quit[0m
+2026-02-05 20:58:15,707 - INFO -  * Restarting with stat
+2026-02-05 20:58:16,567 - WARNING -  * Debugger is active!
+2026-02-05 20:58:16,571 - INFO -  * Debugger PIN: 988-619-374
+2026-02-05 21:00:07,052 - INFO -  * Detected change in 'c:\\Aka\\my.py\\student_scor.py', reloading
+2026-02-05 21:00:07,111 - INFO -  * Restarting with stat
+2026-02-05 21:00:08,009 - WARNING -  * Debugger is active!
+2026-02-05 21:00:08,013 - INFO -  * Debugger PIN: 988-619-374
+2026-02-05 21:01:22,477 - INFO - 127.0.0.1 - - [05/Feb/2026 21:01:22] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2026-02-05 21:01:22,794 - INFO - 127.0.0.1 - - [05/Feb/2026 21:01:22] "GET /?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
+2026-02-05 21:01:22,840 - INFO - 127.0.0.1 - - [05/Feb/2026 21:01:22] "GET /?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
+2026-02-05 21:01:22,943 - INFO - 127.0.0.1 - - [05/Feb/2026 21:01:22] "GET /?__debugger__=yes&cmd=resource&f=console.png&s=zVBVwmtwZEuRhcvuBvyq HTTP/1.1" 200 -
+2026-02-05 21:01:23,057 - INFO - 127.0.0.1 - - [05/Feb/2026 21:01:23] "GET /?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+2026-02-05 21:17:55,946 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.155:5000
+2026-02-05 21:17:55,947 - INFO - [33mPress CTRL+C to quit[0m
+2026-02-05 21:17:55,950 - INFO -  * Restarting with stat
+2026-02-05 21:17:56,829 - WARNING -  * Debugger is active!
+2026-02-05 21:17:56,834 - INFO -  * Debugger PIN: 988-619-374
+2026-02-05 21:18:08,095 - INFO - 127.0.0.1 - - [05/Feb/2026 21:18:08] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2026-02-05 21:18:08,454 - INFO - 127.0.0.1 - - [05/Feb/2026 21:18:08] "[36mGET /?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2026-02-05 21:18:08,457 - INFO - 127.0.0.1 - - [05/Feb/2026 21:18:08] "[36mGET /?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2026-02-05 21:18:08,493 - INFO - 127.0.0.1 - - [05/Feb/2026 21:18:08] "GET /?__debugger__=yes&cmd=resource&f=console.png&s=74SJ5860r9hPJgTdkcnD HTTP/1.1" 200 -
+2026-02-05 21:18:20,164 - INFO -  * Detected change in 'c:\\Aka\\my.py\\student_scor.py', reloading
+2026-02-05 21:18:20,262 - INFO -  * Restarting with stat
+2026-02-05 21:18:21,184 - WARNING -  * Debugger is active!
+2026-02-05 21:18:21,186 - INFO -  * Debugger PIN: 988-619-374
+2026-02-05 21:18:38,404 - INFO -  * Detected change in 'c:\\Aka\\my.py\\student_scor.py', reloading
+2026-02-05 21:18:38,477 - INFO -  * Restarting with stat
+2026-02-05 21:18:39,458 - WARNING -  * Debugger is active!
+2026-02-05 21:18:39,462 - INFO -  * Debugger PIN: 988-619-374
+2026-02-05 21:19:21,712 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.155:5000
+2026-02-05 21:19:21,712 - INFO - [33mPress CTRL+C to quit[0m
+2026-02-05 21:19:21,717 - INFO -  * Restarting with stat
+2026-02-05 21:19:22,621 - WARNING -  * Debugger is active!
+2026-02-05 21:19:22,626 - INFO -  * Debugger PIN: 988-619-374
+2026-02-05 21:19:25,696 - INFO - 127.0.0.1 - - [05/Feb/2026 21:19:25] "[35m[1mGET / HTTP/1.1[0m" 500 -
+2026-02-05 21:19:25,988 - INFO - 127.0.0.1 - - [05/Feb/2026 21:19:25] "[36mGET /?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1[0m" 304 -
+2026-02-05 21:19:25,989 - INFO - 127.0.0.1 - - [05/Feb/2026 21:19:25] "[36mGET /?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1[0m" 304 -
+2026-02-05 21:19:26,072 - INFO - 127.0.0.1 - - [05/Feb/2026 21:19:26] "GET /?__debugger__=yes&cmd=resource&f=console.png&s=UIp79wSpYHDPU6s32m9c HTTP/1.1" 200 -
+2026-02-05 21:19:26,178 - INFO - 127.0.0.1 - - [05/Feb/2026 21:19:26] "[36mGET /?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1[0m" 304 -
+2026-02-05 21:22:49,515 - INFO -  * Detected change in 'c:\\Aka\\my.py\\student_scor.py', reloading
+2026-02-05 21:22:49,596 - INFO -  * Restarting with stat
+2026-02-05 21:22:50,851 - WARNING -  * Debugger is active!
+2026-02-05 21:22:50,858 - INFO -  * Debugger PIN: 988-619-374
+2026-02-05 21:23:00,063 - INFO -  * Detected change in 'c:\\Aka\\my.py\\student_scor.py', reloading
+2026-02-05 21:23:00,188 - INFO -  * Restarting with stat
+2026-02-05 21:23:01,448 - WARNING -  * Debugger is active!
+2026-02-05 21:23:01,455 - INFO -  * Debugger PIN: 988-619-374
+2026-02-05 21:23:05,231 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.155:5000
+2026-02-05 21:23:05,231 - INFO - [33mPress CTRL+C to quit[0m
+2026-02-05 21:23:05,234 - INFO -  * Restarting with stat
+2026-02-05 21:23:06,591 - WARNING -  * Debugger is active!
+2026-02-05 21:23:06,601 - INFO -  * Debugger PIN: 988-619-374
+2026-02-05 21:23:07,772 - INFO - 127.0.0.1 - - [05/Feb/2026 21:23:07] "GET / HTTP/1.1" 200 -
+2026-02-05 21:23:08,132 - INFO - 127.0.0.1 - - [05/Feb/2026 21:23:08] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2026-02-05 21:23:08,141 - INFO - 127.0.0.1 - - [05/Feb/2026 21:23:08] "[36mGET /static/FullLogo.png HTTP/1.1[0m" 304 -
+2026-02-05 21:23:12,165 - INFO - 127.0.0.1 - - [05/Feb/2026 21:23:12] "GET /help HTTP/1.1" 200 -
+2026-02-05 21:23:12,235 - INFO - 127.0.0.1 - - [05/Feb/2026 21:23:12] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2026-02-05 21:23:17,754 - INFO - 127.0.0.1 - - [05/Feb/2026 21:23:17] "GET / HTTP/1.1" 200 -
+2026-02-05 21:23:17,872 - INFO - 127.0.0.1 - - [05/Feb/2026 21:23:17] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2026-02-05 21:23:17,876 - INFO - 127.0.0.1 - - [05/Feb/2026 21:23:17] "[36mGET /static/FullLogo.png HTTP/1.1[0m" 304 -
+2026-02-05 21:23:22,269 - INFO - 127.0.0.1 - - [05/Feb/2026 21:23:22] "GET /login HTTP/1.1" 200 -
+2026-02-05 21:23:22,330 - INFO - 127.0.0.1 - - [05/Feb/2026 21:23:22] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2026-02-05 21:23:31,732 - INFO - 127.0.0.1 - - [05/Feb/2026 21:23:31] "[35m[1mPOST /login HTTP/1.1[0m" 500 -
+2026-02-05 21:23:31,803 - INFO - 127.0.0.1 - - [05/Feb/2026 21:23:31] "GET /login?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
+2026-02-05 21:23:31,821 - INFO - 127.0.0.1 - - [05/Feb/2026 21:23:31] "GET /login?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
+2026-02-05 21:23:31,837 - INFO - 127.0.0.1 - - [05/Feb/2026 21:23:31] "GET /login?__debugger__=yes&cmd=resource&f=console.png&s=X7DD1q4I4VPqacFIxAJY HTTP/1.1" 200 -
+2026-02-05 21:23:31,896 - INFO - 127.0.0.1 - - [05/Feb/2026 21:23:31] "GET /login?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+2026-02-05 21:24:17,550 - INFO -  * Detected change in 'c:\\Aka\\my.py\\student_scor.py', reloading
+2026-02-05 21:24:17,651 - INFO -  * Restarting with stat
+2026-02-05 21:24:18,785 - WARNING -  * Debugger is active!
+2026-02-05 21:24:18,791 - INFO -  * Debugger PIN: 988-619-374
+2026-02-05 21:24:20,863 - INFO -  * Detected change in 'c:\\Aka\\my.py\\student_scor.py', reloading
+2026-02-05 21:24:20,971 - INFO -  * Restarting with stat
+2026-02-05 21:24:22,102 - WARNING -  * Debugger is active!
+2026-02-05 21:24:22,110 - INFO -  * Debugger PIN: 988-619-374
+2026-02-05 21:24:27,212 - INFO -  * Detected change in 'c:\\Aka\\my.py\\student_scor.py', reloading
+2026-02-05 21:24:27,337 - INFO -  * Restarting with stat
+2026-02-05 21:24:28,496 - WARNING -  * Debugger is active!
+2026-02-05 21:24:28,501 - INFO -  * Debugger PIN: 988-619-374
+2026-02-05 21:24:29,541 - INFO -  * Detected change in 'c:\\Aka\\my.py\\student_scor.py', reloading
+2026-02-05 21:24:29,640 - INFO -  * Restarting with stat
+2026-02-05 21:24:30,704 - WARNING -  * Debugger is active!
+2026-02-05 21:24:30,709 - INFO -  * Debugger PIN: 988-619-374
+2026-02-05 21:24:41,190 - INFO - 127.0.0.1 - - [05/Feb/2026 21:24:41] "[32mPOST /login HTTP/1.1[0m" 302 -
+2026-02-05 21:24:41,232 - INFO - 127.0.0.1 - - [05/Feb/2026 21:24:41] "GET /menu HTTP/1.1" 200 -
+2026-02-05 21:24:41,466 - INFO - 127.0.0.1 - - [05/Feb/2026 21:24:41] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2026-02-05 21:24:48,469 - INFO - 127.0.0.1 - - [05/Feb/2026 21:24:48] "GET /view_reports HTTP/1.1" 200 -
+2026-02-05 21:24:48,520 - INFO - 127.0.0.1 - - [05/Feb/2026 21:24:48] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2026-02-05 21:25:01,639 - INFO - 127.0.0.1 - - [05/Feb/2026 21:25:01] "GET /menu HTTP/1.1" 200 -
+2026-02-05 21:25:01,717 - INFO - 127.0.0.1 - - [05/Feb/2026 21:25:01] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2026-02-05 21:25:10,410 - INFO - 127.0.0.1 - - [05/Feb/2026 21:25:10] "GET /change_password HTTP/1.1" 200 -
+2026-02-05 21:25:10,466 - INFO - 127.0.0.1 - - [05/Feb/2026 21:25:10] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2026-02-05 21:25:13,513 - INFO - 127.0.0.1 - - [05/Feb/2026 21:25:13] "GET /menu HTTP/1.1" 200 -
+2026-02-05 21:25:13,584 - INFO - 127.0.0.1 - - [05/Feb/2026 21:25:13] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2026-02-05 21:25:18,027 - INFO - 127.0.0.1 - - [05/Feb/2026 21:25:18] "GET /backup HTTP/1.1" 200 -
+2026-02-05 21:25:36,963 - INFO - 127.0.0.1 - - [05/Feb/2026 21:25:36] "GET /bulk_import HTTP/1.1" 200 -
+2026-02-05 21:25:37,027 - INFO - 127.0.0.1 - - [05/Feb/2026 21:25:37] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2026-02-05 21:25:40,912 - INFO - 127.0.0.1 - - [05/Feb/2026 21:25:40] "GET /menu HTTP/1.1" 200 -
+2026-02-05 21:25:40,988 - INFO - 127.0.0.1 - - [05/Feb/2026 21:25:40] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2026-02-05 21:25:48,334 - INFO - 127.0.0.1 - - [05/Feb/2026 21:25:48] "GET /view_students HTTP/1.1" 200 -
+2026-02-05 21:25:48,388 - INFO - 127.0.0.1 - - [05/Feb/2026 21:25:48] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2026-02-05 21:25:55,348 - INFO - 127.0.0.1 - - [05/Feb/2026 21:25:55] "GET /menu HTTP/1.1" 200 -
+2026-02-05 21:25:55,420 - INFO - 127.0.0.1 - - [05/Feb/2026 21:25:55] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2026-02-05 21:26:00,445 - INFO - 127.0.0.1 - - [05/Feb/2026 21:26:00] "[32mGET /logout HTTP/1.1[0m" 302 -
+2026-02-05 21:26:00,482 - INFO - 127.0.0.1 - - [05/Feb/2026 21:26:00] "GET / HTTP/1.1" 200 -
+2026-02-05 21:26:00,537 - INFO - 127.0.0.1 - - [05/Feb/2026 21:26:00] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2026-02-05 21:26:00,543 - INFO - 127.0.0.1 - - [05/Feb/2026 21:26:00] "[36mGET /static/FullLogo.png HTTP/1.1[0m" 304 -
+2026-02-05 21:26:07,465 - INFO - 127.0.0.1 - - [05/Feb/2026 21:26:07] "GET /signup HTTP/1.1" 200 -
+2026-02-05 21:26:07,586 - INFO - 127.0.0.1 - - [05/Feb/2026 21:26:07] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2026-02-05 21:26:13,924 - INFO - 127.0.0.1 - - [05/Feb/2026 21:26:13] "GET /login HTTP/1.1" 200 -
+2026-02-05 21:26:13,973 - INFO - 127.0.0.1 - - [05/Feb/2026 21:26:13] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2026-02-05 21:34:38,877 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.155:5000
+2026-02-05 21:34:38,878 - INFO - [33mPress CTRL+C to quit[0m
+2026-02-05 21:34:38,881 - INFO -  * Restarting with stat
+2026-02-05 21:34:39,762 - WARNING -  * Debugger is active!
+2026-02-05 21:34:39,768 - INFO -  * Debugger PIN: 988-619-374
+2026-02-05 21:34:44,366 - INFO - 127.0.0.1 - - [05/Feb/2026 21:34:44] "GET /login HTTP/1.1" 200 -
+2026-02-05 21:34:44,616 - INFO - 127.0.0.1 - - [05/Feb/2026 21:34:44] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2026-02-05 21:34:48,068 - INFO - 127.0.0.1 - - [05/Feb/2026 21:34:48] "[32mPOST /login HTTP/1.1[0m" 302 -
+2026-02-05 21:34:48,092 - INFO - 127.0.0.1 - - [05/Feb/2026 21:34:48] "GET /menu HTTP/1.1" 200 -
+2026-02-05 21:34:48,180 - INFO - 127.0.0.1 - - [05/Feb/2026 21:34:48] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2026-02-05 21:34:52,566 - INFO - 127.0.0.1 - - [05/Feb/2026 21:34:52] "GET /view_reports HTTP/1.1" 200 -
+2026-02-05 21:34:52,683 - INFO - 127.0.0.1 - - [05/Feb/2026 21:34:52] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2026-02-05 21:34:57,382 - INFO - 127.0.0.1 - - [05/Feb/2026 21:34:57] "GET /menu HTTP/1.1" 200 -
+2026-02-05 21:34:57,466 - INFO - 127.0.0.1 - - [05/Feb/2026 21:34:57] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2026-02-05 21:35:06,201 - INFO - 127.0.0.1 - - [05/Feb/2026 21:35:06] "GET /reports/export_xlsx HTTP/1.1" 200 -
+2026-02-05 21:35:22,986 - INFO - 127.0.0.1 - - [05/Feb/2026 21:35:22] "GET /change_password HTTP/1.1" 200 -
+2026-02-05 21:35:23,069 - INFO - 127.0.0.1 - - [05/Feb/2026 21:35:23] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2026-02-05 21:35:28,349 - INFO - 127.0.0.1 - - [05/Feb/2026 21:35:28] "GET /menu HTTP/1.1" 200 -
+2026-02-05 21:35:28,495 - INFO - 127.0.0.1 - - [05/Feb/2026 21:35:28] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2026-02-05 21:36:10,207 - INFO -  * Detected change in 'c:\\Aka\\my.py\\student_scor.py', reloading
+2026-02-05 21:36:10,338 - INFO -  * Restarting with stat
+2026-02-05 21:36:11,483 - WARNING -  * Debugger is active!
+2026-02-05 21:36:11,489 - INFO -  * Debugger PIN: 988-619-374
+2026-02-05 21:36:42,108 - INFO -  * Detected change in 'c:\\Aka\\my.py\\student_scor.py', reloading
+2026-02-05 21:36:42,244 - INFO -  * Restarting with stat
+2026-02-05 21:36:43,416 - WARNING -  * Debugger is active!
+2026-02-05 21:36:43,423 - INFO -  * Debugger PIN: 988-619-374
+2026-02-05 21:36:52,637 - INFO -  * Detected change in 'c:\\Aka\\my.py\\student_scor.py', reloading
+2026-02-05 21:36:52,748 - INFO -  * Restarting with stat
+2026-02-05 21:36:54,163 - WARNING -  * Debugger is active!
+2026-02-05 21:36:54,170 - INFO -  * Debugger PIN: 988-619-374
+2026-02-05 21:41:14,021 - INFO -  * Detected change in 'c:\\Aka\\my.py\\student_scor.py', reloading
+2026-02-05 21:41:14,106 - INFO -  * Restarting with stat
+2026-02-05 21:41:15,099 - WARNING -  * Debugger is active!
+2026-02-05 21:41:15,105 - INFO -  * Debugger PIN: 988-619-374
+2026-02-05 22:35:52,661 - INFO - 127.0.0.1 - - [05/Feb/2026 22:35:52] "[35m[1mGET /menu HTTP/1.1[0m" 500 -
+2026-02-05 22:35:53,200 - INFO - 127.0.0.1 - - [05/Feb/2026 22:35:53] "GET /menu?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
+2026-02-05 22:35:53,217 - INFO - 127.0.0.1 - - [05/Feb/2026 22:35:53] "GET /menu?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
+2026-02-05 22:35:53,315 - INFO - 127.0.0.1 - - [05/Feb/2026 22:35:53] "GET /menu?__debugger__=yes&cmd=resource&f=console.png&s=8oZg8TtGEJOY4PDKUq4q HTTP/1.1" 200 -
+2026-02-05 22:35:53,552 - INFO - 127.0.0.1 - - [05/Feb/2026 22:35:53] "GET /menu?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+2026-02-05 22:58:00,553 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.0.155:5000
+2026-02-05 22:58:00,554 - INFO - [33mPress CTRL+C to quit[0m
+2026-02-05 22:58:00,561 - INFO -  * Restarting with stat
+2026-02-05 22:58:02,185 - WARNING -  * Debugger is active!
+2026-02-05 22:58:02,191 - INFO -  * Debugger PIN: 988-619-374
+2026-02-05 22:58:07,239 - INFO - 127.0.0.1 - - [05/Feb/2026 22:58:07] "GET /menu HTTP/1.1" 200 -
+2026-02-05 22:58:07,538 - INFO - 127.0.0.1 - - [05/Feb/2026 22:58:07] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2026-02-05 22:58:24,188 - INFO - 127.0.0.1 - - [05/Feb/2026 22:58:24] "GET /edit_student HTTP/1.1" 200 -
+2026-02-05 22:58:24,320 - INFO - 127.0.0.1 - - [05/Feb/2026 22:58:24] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2026-02-05 22:58:28,058 - INFO - 127.0.0.1 - - [05/Feb/2026 22:58:28] "GET /edit_student?student_id=21/1/567 HTTP/1.1" 200 -
+2026-02-05 22:58:28,270 - INFO - 127.0.0.1 - - [05/Feb/2026 22:58:28] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2026-02-05 22:58:31,535 - INFO - 127.0.0.1 - - [05/Feb/2026 22:58:31] "GET /menu HTTP/1.1" 200 -
+2026-02-05 22:58:31,698 - INFO - 127.0.0.1 - - [05/Feb/2026 22:58:31] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2026-02-05 22:58:37,584 - INFO - 127.0.0.1 - - [05/Feb/2026 22:58:37] "GET /search_student HTTP/1.1" 200 -
+2026-02-05 22:58:37,782 - INFO - 127.0.0.1 - - [05/Feb/2026 22:58:37] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2026-02-05 22:58:43,429 - INFO - 127.0.0.1 - - [05/Feb/2026 22:58:43] "POST /search_student HTTP/1.1" 200 -
+2026-02-05 22:58:43,546 - INFO - 127.0.0.1 - - [05/Feb/2026 22:58:43] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2026-02-05 22:59:04,004 - INFO - 127.0.0.1 - - [05/Feb/2026 22:59:04] "GET /menu HTTP/1.1" 200 -
+2026-02-05 22:59:04,081 - INFO - 127.0.0.1 - - [05/Feb/2026 22:59:04] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2026-02-06 02:41:07,312 - INFO -  * Detected change in 'c:\\Aka\\my.py\\tools\\analyze_endpoints.py', reloading
+2026-02-06 02:41:07,550 - INFO -  * Restarting with stat
+2026-02-06 02:41:08,614 - WARNING -  * Debugger is active!
+2026-02-06 02:41:08,622 - INFO -  * Debugger PIN: 988-619-374
+2026-02-06 02:41:15,799 - INFO -  * Detected change in 'c:\\Aka\\my.py\\tools\\analyze_endpoints.py', reloading
+2026-02-06 02:41:16,021 - INFO -  * Restarting with stat
+2026-02-06 02:41:17,198 - WARNING -  * Debugger is active!
+2026-02-06 02:41:17,203 - INFO -  * Debugger PIN: 988-619-374
+2026-02-06 02:50:54,767 - INFO -  * Detected change in 'c:\\Aka\\my.py\\student_scor.py', reloading
+2026-02-06 02:50:54,852 - INFO -  * Restarting with stat
+2026-02-06 02:50:55,734 - WARNING -  * Debugger is active!
+2026-02-06 02:50:55,739 - INFO -  * Debugger PIN: 988-619-374
+2026-02-06 02:52:37,747 - INFO -  * Detected change in 'c:\\Aka\\my.py\\student_scor.py', reloading

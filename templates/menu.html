@@ -16,7 +16,7 @@
         .hero-section h1 {
             font-size: 3rem;
             margin-bottom: 10px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -198,18 +198,24 @@
             </a>
             <a href="{{ url_for('reports_export_csv') }}" class="action-btn">
                 <i class="fas fa-download"></i>
-                Export Data
+                Export CSV
             </a>
-            {% if session.get('user_id') == 'admin' %}
-            <a href="{{ url_for('view_reports') }}" class="action-btn">
-                <i class="fas fa-comments"></i>
-                View Reports
+            <a href="{{ url_for('reports_export_xlsx') }}" class="action-btn">
+                <i class="fas fa-file-excel"></i>
+                Export XLSX
             </a>
-            <a href="https://report-viewers.onrender.com" class="action-btn" target="_blank" rel="noopener">
-                <i class="fas fa-external-link-alt"></i>
-                Report Viewer
+            <a href="{{ url_for('bulk_import') }}" class="action-btn">
+                <i class="fas fa-upload"></i>
+                Bulk Import
             </a>
-            {% endif %}
+            <a href="{{ url_for('backup') }}" class="action-btn">
+                <i class="fas fa-database"></i>
+                Backup DB
+            </a>
+            <a href="{{ url_for('change_password') }}" class="action-btn">
+                <i class="fas fa-key"></i>
+                Change Password
+            </a>
         </div>
 
         <div class="feature-grid">

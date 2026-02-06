@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restore Database - Student Score Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Restore Database</h1>
+        <p>Upload a .db file to restore the database.</p>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <form method="post" enctype="multipart/form-data">
+            <label for="file">Select DB File:</label>
+            <input type="file" name="file" accept=".db" required>
+            <button type="submit">Restore</button>
+        </form>
+        <a href="{{ url_for('menu') }}">Back to Menu</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to Use Student Score Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            margin: 0;
+            padding: 0;
+        }
+
+        .help-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .help-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .help-header h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .help-header p {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .help-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .help-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .help-section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .help-section h2 i {
+            color: #667eea;
+        }
+
+        .help-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .help-section li {
+            margin-bottom: 15px;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .help-section li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .help-section p {
+            color: #5a6c7d;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .step-number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-content h3 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+
+        .step-content p {
+            margin: 0;
+            color: #5a6c7d;
+        }
+
+        .video-tutorial {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .video-tutorial h2 {
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .video-tutorial p {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(67, 233, 123, 0.3);
+        }
+
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(67, 233, 123, 0.4);
+        }
+
+        .faq-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .faq-item {
+            border-bottom: 1px solid #e9ecef;
+            padding: 20px 0;
+        }
+
+        .faq-item:last-child {
+            border-bottom: none;
+        }
+
+        .faq-question {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .faq-answer {
+            color: #5a6c7d;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .help-container {
+                padding: 20px 15px;
+            }
+
+            .help-header h1 {
+                font-size: 2rem;
+            }
+
+            .help-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .help-section {
+                padding: 20px;
+            }
+
+            .video-tutorial {
+                padding: 30px 20px;
+            }
+
+            .video-tutorial h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="help-container">
+        <div class="help-header">
+            <h1><i class="fas fa-question-circle"></i> How to Use Student Score Management System</h1>
+            <p>Complete guide to help you navigate and use all features of our student score management platform.</p>
+        </div>
+
+        <div class="video-tutorial">
+            <h2><i class="fas fa-play-circle"></i> Quick Start Video Tutorial</h2>
+            <p>Watch this 5-minute video to get started with the system quickly.</p>
+            <p><em>Video tutorial coming soon...</em></p>
+        </div>
+
+        <div class="help-grid">
+            <div class="help-section">
+                <h2><i class="fas fa-user-plus"></i> Getting Started</h2>
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <div style="display: flex; align-items: flex-start;">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <h3>Sign Up or Login</h3>
+                            <p>Create a new account or login with your existing credentials to access the system.</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: flex-start;">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <h3>Navigate the Menu</h3>
+                            <p>Use the main menu to access different features like adding students, viewing reports, and managing scores.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="help-section">
+                <h2><i class="fas fa-user-graduate"></i> Managing Students</h2>
+                <ul>
+                    <li><strong>Add Student:</strong> Enter student details including name, ID, class, and subjects</li>
+                    <li><strong>Edit Student:</strong> Update student information and subject details</li>
+                    <li><strong>Delete Student:</strong> Remove students from the system</li>
+                    <li><strong>Search Students:</strong> Find students by name, ID, or class</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h2><i class="fas fa-chart-line"></i> Score Management</h2>
+                <ul>
+                    <li><strong>Enter Scores:</strong> Input test scores, CBT, and theory exam marks for each subject</li>
+                    <li><strong>Automatic Calculation:</strong> System automatically calculates totals and grades</li>
+                    <li><strong>Grade Boundaries:</strong> A (70+), B (60-69), C (50-59), D (40-49), F (below 40)</li>
+                    <li><strong>Validation:</strong> System validates score ranges and prevents invalid entries</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h2><i class="fas fa-chart-bar"></i> Reports & Analytics</h2>
+                <ul>
+                    <li><strong>View Students:</strong> See all students with their scores and grades</li>
+                    <li><strong>Student Reports:</strong> Detailed individual student performance reports</li>
+                    <li><strong>Class Reports:</strong> Overview of entire class performance</li>
+                    <li><strong>Ranking System:</strong> Automatic ranking based on average marks</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h2><i class="fas fa-trophy"></i> Ranking & Positions</h2>
+                <p>The system provides automatic ranking based on average marks:</p>
+                <ul>
+                    <li>Students are ranked within their class</li>
+                    <li>Higher average marks get better positions</li>
+                    <li>Tie-breaking is handled automatically</li>
+                    <li>Positions update when scores change</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h2><i class="fas fa-bug"></i> Reporting Issues</h2>
+                <ul>
+                    <li>Use the "Report Issue" feature to submit technical problems</li>
+                    <li>Provide detailed descriptions of issues encountered</li>
+                    <li>Issues are reviewed by administrators</li>
+                    <li>You'll receive updates on reported issues</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="faq-section">
+            <h2 style="text-align: center; margin-bottom: 30px;"><i class="fas fa-question-circle"></i> Frequently Asked Questions</h2>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    How do I add multiple subjects for a student?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    When adding a student, enter the number of subjects first, then list all subjects separated by commas in the subjects field (e.g., "Mathematics, English, Physics").
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    What score ranges are valid?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    First Test, Second Test, Third Test: 0-10 each<br>
+                    CBT/Objective: 0-30<br>
+                    Theory Exam: 0-40<br>
+                    The system will validate and prevent invalid score entries.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    How are grades calculated?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Grades are based on overall marks (tests + exams):<br>
+                    A: 70-100, B: 60-69, C: 50-59, D: 40-49, F: 0-39<br>
+                    Pass/Fail status: Pass (60+), Fail (below 60)
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    Can I export student data?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Yes, you can export student reports and rankings in various formats. Look for export options in the reports section.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question">
+                    How do I reset a student's scores?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="faq-answer">
+                    Go to "Enter Scores" for the student and submit new scores. The system will automatically update and recalculate grades.
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="{{ url_for('home') }}" class="btn-back">
+                <i class="fas fa-arrow-left"></i>
+                Back to Home
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Simple FAQ toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const faqQuestions = document.querySelectorAll('.faq-question');
+
+            faqQuestions.forEach(question => {
+                question.addEventListener('click', function() {
+                    const answer = this.nextElementSibling;
+                    const icon = this.querySelector('i');
+
+                    if (answer.style.display === 'block') {
+                        answer.style.display = 'none';
+                        icon.style.transform = 'rotate(0deg)';
+                    } else {
+                        answer.style.display = 'block';
+                        icon.style.transform = 'rotate(180deg)';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

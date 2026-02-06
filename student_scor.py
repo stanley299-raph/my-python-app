@@ -4,7 +4,7 @@ Student Score Management System
 A comprehensive Flask web application for managing student academic records,
 including user authentication, score tracking, grading, and reporting features.
 
-Author: Sondu Stanley
+Author: OSondu Stanley
 Version: 1.0.0
 """
 
@@ -22,6 +22,12 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 import os
 
+import logging
+
+# Set up logging
+logging.basicConfig(filename='app.log', level=logging.INFO, 
+                    format='%(asctime)s - %(levelname)s - %(message)s')
+
 def init_db():
     """Initialize the SQLite database and create tables if they don't exist."""
     conn = sqlite3.connect('student_score.db')
@@ -32,8 +38,15 @@ def init_db():
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     username TEXT UNIQUE NOT NULL,
                     password_hash TEXT NOT NULL,
+                    role TEXT DEFAULT 'teacher',
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )''')
+
+    # Add role column if it doesn't exist
+    try:
+        c.execute('ALTER TABLE users ADD COLUMN role TEXT DEFAULT "teacher"')
+    except sqlite3.OperationalError:
+        pass  # Column already exists
 
     # Create students table
     c.execute('''CREATE TABLE IF NOT EXISTS students (
@@ -73,12 +86,17 @@ def load_users():
     Load user credentials from SQLite database.
 
     Returns:
-        dict: Dictionary of username -> hashed_password pairs
+        dict: Dictionary of username -> {'password_hash': hash, 'role': role}
     """
     conn = sqlite3.connect('student_score.db')
     c = conn.cursor()
-    c.execute('SELECT username, password_hash FROM users')
-    users = {row[0]: row[1] for row in c.fetchall()}
+    try:
+        c.execute('SELECT username, password_hash, role FROM users')
+        users = {row[0]: {'password_hash': row[1], 'role': row[2] or 'teacher'} for row in c.fetchall()}
+    except sqlite3.OperationalError:
+        # Fallback if role column doesn't exist
+        c.execute('SELECT username, password_hash FROM users')
+        users = {row[0]: {'password_hash': row[1], 'role': 'teacher'} for row in c.fetchall()}
     conn.close()
     return users
 
@@ -87,14 +105,19 @@ def save_users(users):
     Save user credentials to SQLite database.
 
     Args:
-        users (dict): Dictionary of username -> hashed_password pairs
+        users (dict): Dictionary of username -> {'password_hash': hash, 'role': role}
     """
     conn = sqlite3.connect('student_score.db')
     c = conn.cursor()
     c.execute('DELETE FROM users')  # Clear existing users
-    for username, password_hash in users.items():
-        c.execute('INSERT INTO users (username, password_hash) VALUES (?, ?)',
-                 (username, password_hash))
+    for username, data in users.items():
+        try:
+            c.execute('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)',
+                     (username, data['password_hash'], data.get('role', 'teacher')))
+        except sqlite3.OperationalError:
+            # Fallback if role column doesn't exist
+            c.execute('INSERT INTO users (username, password_hash) VALUES (?, ?)',
+                     (username, data['password_hash']))
     conn.commit()
     conn.close()
 
@@ -301,8 +324,9 @@ def login():
         username = request.form['username']
         password = request.form['password']
         users = load_users()
-        if username in users and check_password(users[username], password):
+        if username in users and check_password(users[username]['password_hash'], password):
             session['user_id'] = username
+            session['role'] = users[username]['role']
             return redirect(url_for('menu'))
         else:
             flash('Invalid username or password')
@@ -321,7 +345,7 @@ def signup():
         if username in users:
             flash('Email already exists')
             return redirect(url_for('signup'))
-        users[username] = hash_password(password)
+        users[username] = {'password_hash': hash_password(password), 'role': 'teacher'}
         save_users(users)
         flash('Account created successfully. Please log in.')
         return redirect(url_for('login'))
@@ -330,13 +354,188 @@ def signup():
 @app.route('/logout')
 def logout():
     session.pop('user_id', None)
+    session.pop('role', None)
     return redirect(url_for('home'))
 
 @app.route('/menu')
 def menu():
     if 'user_id' not in session:
         return redirect(url_for('login'))
+    role = session.get('role', 'teacher')
+    if role == 'student':
+        return redirect(url_for('student_menu'))
     return render_template('menu.html')
+
+@app.route('/student_menu')
+def student_menu():
+    if 'user_id' not in session or session.get('role') != 'student':
+        return redirect(url_for('login'))
+    return render_template('student_menu.html')
+
+@app.route('/my_report')
+def my_report():
+    if 'user_id' not in session or session.get('role') != 'student':
+        return redirect(url_for('login'))
+
+    student_id = session['user_id']
+    user_id = 'admin'  # Assume students are under admin or something, but for now, assume user_id is the teacher, but since student logs in with student_id, perhaps user_id is the student_id.
+
+    # For simplicity, assume students are stored under their own user_id = student_id.
+
+    user_students = load_students(student_id)  # Wait, no.
+
+    # To make it work, perhaps students have their own user_id = student_id, and they have one student with that ID.
+
+    # So, user_students = load_students(student_id), and the student is student_id.
+
+    student_data = load_students(student_id).get(student_id)
+
+    if not student_data:
+        flash('Student data not found.')
+        return redirect(url_for('student_menu'))
+
+    scores = student_data.get('scores', {})
+
+    if scores:
+        overall_marks = [subj_data.get('overall_mark', 0) for subj_data in scores.values() if isinstance(subj_data, dict)]
+        average_marks = sum(overall_marks) / len(overall_marks) if overall_marks else 0
+        total_marks = sum(overall_marks)
+    else:
+        average_marks = 0
+        total_marks = 0
+
+    if average_marks >= 70:
+        grade = 'A'
+    elif average_marks >= 60:
+        grade = 'B'
+    elif average_marks >= 50:
+        grade = 'C'
+    elif average_marks >= 40:
+        grade = 'D'
+    else:
+        grade = 'F'
+
+    status = 'Pass' if average_marks >= 60 else 'Fail'
+
+    subjects_with_scores = {}
+    for subject in student_data.get('subjects', []):
+        subj_scores = scores.get(subject, {})
+        if isinstance(subj_scores, dict):
+            subjects_with_scores[subject] = {
+                'tests': subj_scores.get('total_test', 0),
+                'exam': subj_scores.get('total_exam', 0),
+                'total': subj_scores.get('overall_mark', 0)
+            }
+        else:
+            subjects_with_scores[subject] = {'tests': 0, 'exam': 0, 'total': 0}
+
+    # Positions: since single student, perhaps not needed, or calculate across all.
+
+    student = {
+        'first_name': student_data.get('firstname', ''),
+        'student_id': student_id,
+        'class_name': student_data.get('classname', ''),
+        'number_of_subject': student_data.get('number_of_subject', 0),
+        'subjects': subjects_with_scores,
+        'total_marks': total_marks,
+        'average_marks': average_marks,
+        'Grade': grade,
+        'Status': status
+    }
+
+    return render_template('student_report.html', student=student, position=None, 
+                           chart_labels=list(student['subjects'].keys()), 
+                           chart_data=[subj_data.get('overall_mark', 0) for subj_data in student['subjects'].values()])
+
+@app.route('/change_password', methods=['GET', 'POST'])
+def change_password():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        current_password = request.form['current_password']
+        new_password = request.form['new_password']
+        confirm_password = request.form['confirm_password']
+
+        users = load_users()
+        user_id = session['user_id']
+
+        if user_id not in users or not check_password(users[user_id]['password_hash'], current_password):
+            flash('Current password is incorrect.', 'error')
+            return redirect(url_for('change_password'))
+
+        if new_password != confirm_password:
+            flash('New passwords do not match.', 'error')
+            return redirect(url_for('change_password'))
+
+        if len(new_password) < 6:
+            flash('New password must be at least 6 characters long.', 'error')
+            return redirect(url_for('change_password'))
+
+        users[user_id] = {'password_hash': hash_password(new_password), 'role': users[user_id].get('role', 'teacher')}
+        save_users(users)
+        flash('Password changed successfully!', 'success')
+        return redirect(url_for('menu'))
+
+    return render_template('change_password.html')
+
+@app.route('/bulk_import', methods=['GET', 'POST'])
+def bulk_import():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        file = request.files.get('file')
+        if not file or not file.filename.endswith('.csv'):
+            flash('Please upload a valid CSV file.', 'error')
+            return redirect(url_for('bulk_import'))
+
+        user_id = session['user_id']
+        user_students = load_students(user_id)
+
+        csv_content = file.read().decode('utf-8')
+        reader = csv.DictReader(StringIO(csv_content))
+
+        imported = 0
+        errors = []
+
+        for row in reader:
+            student_id = row.get('Student ID', '').strip()
+            firstname = row.get('First Name', '').strip()
+            classname = row.get('Class', '').strip()
+            subjects_str = row.get('Subjects', '').strip()
+
+            if not student_id or not firstname or not classname or not subjects_str:
+                errors.append(f"Missing data for student {student_id}")
+                continue
+
+            subjects = [s.strip() for s in subjects_str.split(',') if s.strip()]
+            number_of_subject = len(subjects)
+
+            if student_id in user_students:
+                errors.append(f"Student ID {student_id} already exists")
+                continue
+
+            student_data = {
+                'firstname': firstname,
+                'classname': classname,
+                'number_of_subject': number_of_subject,
+                'subjects': subjects,
+                'scores': {}
+            }
+
+            save_student(user_id, student_id, student_data)
+            imported += 1
+
+        if imported > 0:
+            flash(f'Successfully imported {imported} students.', 'success')
+        if errors:
+            for error in errors:
+                flash(error, 'error')
+
+        return redirect(url_for('view_students'))
+
+    return render_template('bulk_import.html')
 
 @app.route('/add_student', methods=['GET', 'POST'])
 def add_student():
@@ -348,9 +547,20 @@ def add_student():
         classname = request.form['classname']
         number_of_subject = int(request.form['number_of_subject'])
 
-        # Improved subject parsing: handle comma, space, or newline separated
-        subjects_input = request.form['subjects']
-        subjects = [s.strip() for s in re.split(r'[,\s\n]+', subjects_input.strip()) if s.strip()]
+        # Validation: Check student_id format (e.g., alphanumeric, no spaces)
+        if not re.match(r'^[A-Za-z0-9_-]+$', student_id):
+            flash("Student ID must contain only letters, numbers, underscores, or hyphens.", "error")
+            return redirect(url_for('add_student'))
+
+        # Validation: Check firstname format
+        if not firstname or not re.match(r'^[A-Za-z\s]+$', firstname):
+            flash("First name must contain only letters and spaces.", "error")
+            return redirect(url_for('add_student'))
+
+        # Validation: Check classname
+        if not classname:
+            flash("Class name is required.", "error")
+            return redirect(url_for('add_student'))
 
         # Validation: Check if number of subjects matches
         if len(subjects) != number_of_subject:
@@ -373,6 +583,7 @@ def add_student():
 
         save_student(user_id, student_id, student_data)
         flash('Student added successfully! Now enter scores for each subject.', 'success')
+        logging.info(f"User {user_id} added student {student_id}")
         return redirect(url_for('enter_scores', student_id=student_id))
 
     return render_template('add_student.html')
@@ -384,6 +595,9 @@ def view_students():
 
     user_id = session['user_id']
     user_students = load_students(user_id)
+
+    page = int(request.args.get('page', 1))
+    per_page = 10  # Students per page
 
     # Transform data to match template expectations
     students_list = []
@@ -456,14 +670,23 @@ def view_students():
     classes = list(set(student['class_name'] for student in students_list))
     positions = calculate_positions(students_list)
 
+    # Pagination
+    total = len(students_list)
+    start = (page - 1) * per_page
+    end = start + per_page
+    paginated_students = students_list[start:end]
+
     return render_template('view_students.html',
-                         students=students_list,
-                         total_students=len(students_list),
+                         students=paginated_students,
+                         total_students=total,
                          grade_a_count=grade_a_count,
                          pass_count=pass_count,
                          overall_average=overall_average,
                          classes=classes,
-                         positions=positions)
+                         positions=positions,
+                         page=page,
+                         per_page=per_page,
+                         total_pages=(total + per_page - 1) // per_page)
 
 @app.route('/edit_student', methods=['GET', 'POST'])
 def edit_student():
@@ -524,26 +747,25 @@ def search_student():
     user_id = session['user_id']
     user_students = load_students(user_id)
 
-    search_results = []
-    search_query = ''
+    student = None
+    positions = {}
 
     if request.method == 'POST':
-        search_query = request.form.get('search_query', '').strip().lower()
-
-        if search_query:
-            for student_id, student_data in user_students.items():
-                if (search_query in student_id.lower() or
-                    search_query in student_data.get('firstname', '').lower() or
-                    search_query in student_data.get('classname', '').lower()):
-                    # Calculate average marks from overall_mark
+        student_id = request.form.get('student_id', '').strip().lower()
+        if student_id:
+            for sid, sdata in user_students.items():
+                if sid.lower() == student_id:
+                    student_data = sdata
                     scores = student_data.get('scores', {})
+
                     if scores:
                         overall_marks = [subj_data.get('overall_mark', 0) for subj_data in scores.values() if isinstance(subj_data, dict)]
                         average_marks = sum(overall_marks) / len(overall_marks) if overall_marks else 0
+                        total_marks = sum(overall_marks)
                     else:
                         average_marks = 0
+                        total_marks = 0
 
-                    # Determine grade
                     if average_marks >= 70:
                         grade = 'A'
                     elif average_marks >= 60:
@@ -555,20 +777,53 @@ def search_student():
                     else:
                         grade = 'F'
 
-                    # Determine status
                     status = 'Pass' if average_marks >= 60 else 'Fail'
 
-                    search_results.append({
+                    # Restructure subjects as dictionary with score data
+                    subjects_with_scores = {}
+                    for subject in student_data.get('subjects', []):
+                        subj_scores = scores.get(subject, {})
+                        if isinstance(subj_scores, dict):
+                            subjects_with_scores[subject] = {
+                                'tests': subj_scores.get('total_test', 0),
+                                'exam': subj_scores.get('total_exam', 0),
+                                'total': subj_scores.get('overall_mark', 0)
+                            }
+                        else:
+                            subjects_with_scores[subject] = {'tests': 0, 'exam': 0, 'total': 0}
+
+                    # Build positions across this user's students
+                    students_list = []
+                    for sid2, sdata2 in user_students.items():
+                        sscores2 = sdata2.get('scores', {})
+                        if sscores2:
+                            overall_marks2 = [subj_data.get('overall_mark', 0) for subj_data in sscores2.values() if isinstance(subj_data, dict)]
+                            avg_marks2 = sum(overall_marks2) / len(overall_marks2) if overall_marks2 else 0
+                        else:
+                            avg_marks2 = 0
+                        students_list.append({
+                            'first_name': sdata2.get('firstname', ''),
+                            'student_id': sid2,
+                            'class_name': sdata2.get('classname', ''),
+                            'subjects': sscores2,
+                            'average_marks': avg_marks2
+                        })
+                    positions = calculate_positions(students_list)
+
+                    student = {
                         'first_name': student_data.get('firstname', ''),
-                        'student_id': student_id,
+                        'student_id': sid,
                         'class_name': student_data.get('classname', ''),
-                        'subjects': {subj: subj_data.get('overall_mark', 0) for subj, subj_data in scores.items() if isinstance(subj_data, dict)},
+                        'number_of_subject': student_data.get('number_of_subject', 0),
+                        'subjects': subjects_with_scores,
+                        'total_marks': total_marks,
                         'average_marks': average_marks,
                         'Grade': grade,
                         'Status': status
-                    })
+                    }
+                    break
 
-    return render_template('search_student.html', students=search_results, search_query=search_query)
+    return render_template('search_student.html', student=student, positions=positions)
 
 @app.route('/rank_students')
 def rank_students():
@@ -803,7 +1058,9 @@ def student_report():
         'Status': status
     }
 
-    return render_template('student_report.html', student=student, position=positions.get(student_id))
+    return render_template('student_report.html', student=student, position=positions.get(student_id), 
+                           chart_labels=list(student['subjects'].keys()), 
+                           chart_data=[subj_data.get('overall_mark', 0) for subj_data in student['subjects'].values()])
 
 @app.route('/all_students_report')
 def all_students_report():
@@ -893,18 +1150,69 @@ def all_students_report():
         student_id_filter=student_id_filter
     )
 
-@app.route('/reports/all_students')
-def reports_all_students():
+@app.route('/api/students')
+def api_students():
     if 'user_id' not in session:
-        return redirect(url_for('login'))
-    return redirect(url_for('all_students_report'))
+        return {'error': 'Unauthorized'}, 401
+
+    user_id = session['user_id']
+    user_students = load_students(user_id)
+    return {'students': user_students}
 
 @app.route('/reports/export_csv')
 def reports_export_csv():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    # For now, just redirect to all_students_report
-    return redirect(url_for('all_students_report'))
+
+    user_id = session['user_id']
+    user_students = load_students(user_id)
+
+    # Create CSV in memory
+    output = StringIO()
+    writer = csv.writer(output)
+
+    # Write header
+    writer.writerow(['Student ID', 'First Name', 'Class', 'Average Marks', 'Grade', 'Status', 'Subjects'])
+
+    # Write data
+    for student_id, student_data in user_students.items():
+        scores = student_data.get('scores', {})
+        if scores:
+            overall_marks = [subj_data.get('overall_mark', 0) for subj_data in scores.values() if isinstance(subj_data, dict)]
+            average_marks = sum(overall_marks) / len(overall_marks) if overall_marks else 0
+        else:
+            average_marks = 0
+
+        if average_marks >= 70:
+            grade = 'A'
+        elif average_marks >= 60:
+            grade = 'B'
+        elif average_marks >= 50:
+            grade = 'C'
+        elif average_marks >= 40:
+            grade = 'D'
+        else:
+            grade = 'F'
+
+        status = 'Pass' if average_marks >= 60 else 'Fail'
+
+        subjects_str = ', '.join(student_data.get('subjects', []))
+
+        writer.writerow([
+            student_id,
+            student_data.get('firstname', ''),
+            student_data.get('classname', ''),
+            f"{average_marks:.2f}",
+            grade,
+            status,
+            subjects_str
+        ])
+
+    output.seek(0)
+    return send_file(BytesIO(output.getvalue().encode('utf-8')), 
+                     mimetype='text/csv', 
+                     as_attachment=True, 
+                     download_name='students_report.csv')
 
 @app.route('/rank/export_csv')
 def export_rank_csv():
@@ -913,12 +1221,69 @@ def export_rank_csv():
     # Placeholder: re-use existing CSV export until rank-specific export is implemented
     return redirect(url_for('reports_export_csv', **request.args))
 
-@app.route('/rank/export_xlsx')
-def export_rank_xlsx():
+@app.route('/reports/export_xlsx')
+def reports_export_xlsx():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    flash('Rank XLSX export is not implemented yet.', 'info')
-    return redirect(url_for('rank_students', **request.args))
+
+    try:
+        from openpyxl import Workbook
+    except ImportError:
+        flash('XLSX export requires openpyxl. Please install it.', 'error')
+        return redirect(url_for('all_students_report'))
+
+    user_id = session['user_id']
+    user_students = load_students(user_id)
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Students Report"
+
+    # Write header
+    headers = ['Student ID', 'First Name', 'Class', 'Average Marks', 'Grade', 'Status', 'Subjects']
+    for col_num, header in enumerate(headers, 1):
+        ws.cell(row=1, column=col_num, value=header)
+
+    # Write data
+    for row_num, (student_id, student_data) in enumerate(user_students.items(), 2):
+        scores = student_data.get('scores', {})
+        if scores:
+            overall_marks = [subj_data.get('overall_mark', 0) for subj_data in scores.values() if isinstance(subj_data, dict)]
+            average_marks = sum(overall_marks) / len(overall_marks) if overall_marks else 0
+        else:
+            average_marks = 0
+
+        if average_marks >= 70:
+            grade = 'A'
+        elif average_marks >= 60:
+            grade = 'B'
+        elif average_marks >= 50:
+            grade = 'C'
+        elif average_marks >= 40:
+            grade = 'D'
+        else:
+            grade = 'F'
+
+        status = 'Pass' if average_marks >= 60 else 'Fail'
+
+        subjects_str = ', '.join(student_data.get('subjects', []))
+
+        ws.cell(row=row_num, column=1, value=student_id)
+        ws.cell(row=row_num, column=2, value=student_data.get('firstname', ''))
+        ws.cell(row=row_num, column=3, value=student_data.get('classname', ''))
+        ws.cell(row=row_num, column=4, value=round(average_marks, 2))
+        ws.cell(row=row_num, column=5, value=grade)
+        ws.cell(row=row_num, column=6, value=status)
+        ws.cell(row=row_num, column=7, value=subjects_str)
+
+    # Save to BytesIO
+    bio = BytesIO()
+    wb.save(bio)
+    bio.seek(0)
+    return send_file(bio, 
+                     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 
+                     as_attachment=True, 
+                     download_name='students_report.xlsx')
 
 @app.route('/report_issue', methods=['GET', 'POST'])
 def report_issue():
@@ -942,36 +1307,37 @@ def report_issue():
 
     return render_template('report_issue.html')
 
-@app.route('/view_reports')
-def view_reports():
+@app.route('/backup')
+def backup():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
-    # Only allow admin user to view reports
-    if session['user_id'] != 'osondu':
-        flash('Access denied. Only administrators can view reports.', 'error')
+    return send_file('student_score.db', as_attachment=True, download_name='backup.db')
+
+@app.route('/restore', methods=['GET', 'POST'])
+def restore():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        file = request.files.get('file')
+        if file and file.filename.endswith('.db'):
+            file.save('student_score.db')
+            flash('Database restored successfully!', 'success')
+            logging.info(f"User {session['user_id']} restored database")
+        else:
+            flash('Please upload a valid .db file.', 'error')
         return redirect(url_for('menu'))
 
-    reports = load_reports()
-    return render_template('view_reports.html', reports=reports)
+    return render_template('restore.html')
 
-@app.route('/mark_report_read/<int:report_id>')
-def mark_report_read_route(report_id):
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-
-    # Only allow admin user to mark reports as read
-    if session['user_id'] != 'osondu':
-        flash('Access denied. Only administrators can mark reports as read.', 'error')
-        return redirect(url_for('view_reports'))
-
-    mark_report_read(report_id)
-    flash('Report marked as read.', 'success')
-    return redirect(url_for('view_reports'))
+@app.route('/help')
+def help():
+    return render_template('help.html')
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    debug = os.environ.get('FLASK_DEBUG') == '1'
+    debug = True  # Enable debug mode
     app.run(host='0.0.0.0', port=port, debug=debug)
 
 

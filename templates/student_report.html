@@ -3,78 +3,403 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Report - {{ student.first_name }} ({{ student.student_id }})</title>
+    <title>Academic Report Card - {{ student.first_name }} ({{ student.student_id }})</title>
     <style>
-        body{font-family:Segoe UI,Arial,sans-serif;margin:20px;color:#333}
-        h1{margin-bottom:6px}
-        .meta{margin-bottom:20px}
-        table{width:100%;border-collapse:collapse}
-        th,td{border:1px solid #ddd;padding:8px;text-align:center}
-        th{background:#f8f9fa}
-        .right{text-align:right}
-        .print-btn{position:fixed;right:20px;top:20px}
+        body {
+            font-family: 'Times New Roman', serif;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            background: #f9f9f9;
+        }
+
+        .report-card {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border: 2px solid #333;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 3px solid #333;
+        }
+
+        .school-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .report-title {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .student-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .info-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #666;
+            letter-spacing: 1px;
+        }
+
+        .info-value {
+            font-size: 14px;
+            padding: 5px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .subjects-table {
+            margin: 20px;
+        }
+
+        .table-title {
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+            text-decoration: underline;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        th {
+            background: #e9ecef;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 11px;
+        }
+
+        .summary-row {
+            background: #fff3cd;
+            font-weight: bold;
+        }
+
+        .teacher-comment {
+            margin: 20px;
+            padding: 15px;
+            border: 1px solid #333;
+            min-height: 80px;
+        }
+
+        .comment-title {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-decoration: underline;
+        }
+
+        .signatures {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+        }
+
+        .signature-box {
+            text-align: center;
+        }
+
+        .signature-line {
+            border-bottom: 1px solid #333;
+            margin-top: 40px;
+            margin-bottom: 5px;
+        }
+
+        .signature-title {
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .print-btn {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .print-btn:hover {
+            background: #218838;
+        }
+
+        .back-link {
+            text-align: center;
+            margin: 20px;
+            padding: 10px;
+        }
+
+        .back-link a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        @media print {
+            .print-btn, .back-link {
+                display: none;
+            }
+
+            body {
+                background: white;
+            }
+
+            .report-card {
+                box-shadow: none;
+                border: 1px solid #333;
+            }
+        }
     </style>
 </head>
 <body>
-    <button class="print-btn" onclick="window.print()">Print</button>
-    <h1>
-        Report for {{ student.first_name }} ({{ student.student_id }})
-        — Class: {{ student.class_name }}
-        {% if position %} — Rank: {{ position.pos }}/{{ position.size }}{% endif %}
-    </h1>
-    <div class="meta">
-        <strong>Class:</strong> {{ student.class_name }} &nbsp; | &nbsp;
-        <strong>Subjects:</strong> {{ student.number_of_subject }}
+    <button class="print-btn" onclick="window.print()">Print Report Card</button>
+
+    <div class="report-card">
+        <div class="header">
+            <div class="school-name">Student Score Management System</div>
+            <div class="report-title">Academic Report Card</div>
+            <div>Term/Semester Report</div>
+        </div>
+
+        <div class="student-info">
+            <div class="info-group">
+                <div class="info-label">Student Name</div>
+                <div class="info-value">{{ student.first_name }}</div>
+
+                <div class="info-label">Student ID</div>
+                <div class="info-value">{{ student.student_id }}</div>
+
+                <div class="info-label">Class</div>
+                <div class="info-value">{{ student.class_name }}</div>
+            </div>
+
+            <div class="info-group">
+                <div class="info-label">Number of Subjects</div>
+                <div class="info-value">{{ student.number_of_subject }}</div>
+
+                <div class="info-label">Overall Grade</div>
+                <div class="info-value">{{ student.Grade }}</div>
+
+                <div class="info-label">Status</div>
+                <div class="info-value">{{ student.Status }}</div>
+            </div>
+        </div>
+
+        {% if position %}
+        <div style="padding: 10px 20px; background: #e7f3ff; border-bottom: 1px solid #dee2e6; text-align: center; font-weight: bold;">
+            Class Position: {{ position.pos }} out of {{ position.size }} students in {{ position.class }}
+        </div>
+        {% endif %}
+
+        <div class="subjects-table">
+            <div class="table-title">Subject Performance Details</div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th rowspan="2" style="width: 15%;">Subject</th>
+                        <th colspan="3">Continuous Assessment (30%)</th>
+                        <th colspan="2">Examination (70%)</th>
+                        <th rowspan="2">Total<br>(100%)</th>
+                        <th rowspan="2">Grade</th>
+                    </tr>
+                    <tr>
+                        <th>Test 1<br>(10)</th>
+                        <th>Test 2<br>(10)</th>
+                        <th>Test 3<br>(10)</th>
+                        <th>CBT<br>(30)</th>
+                        <th>Theory<br>(40)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for subject, s in student.subjects.items() %}
+                    {% set tests = s.get('tests', []) %}
+                    <tr>
+                        <td style="text-align: left; font-weight: bold;">{{ subject }}</td>
+                        <td>{{ tests[0] if tests|length > 0 else s.get('first_test', '-') }}</td>
+                        <td>{{ tests[1] if tests|length > 1 else s.get('second_test', '-') }}</td>
+                        <td>{{ tests[2] if tests|length > 2 else s.get('third_test', '-') }}</td>
+                        <td>{{ s.get('objective', '-') }}</td>
+                        <td>{{ s.get('theory', '-') }}</td>
+                        <td style="font-weight: bold;">{{ s.get('overall_mark', '-') }}</td>
+                        <td style="font-weight: bold;">{{ s.get('grade', '-') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="summary-row">
+                        <td style="text-align: left; font-weight: bold;">OVERALL AVERAGE</td>
+                        <td colspan="5" style="text-align: center; font-weight: bold;">Average Score</td>
+                        <td style="font-weight: bold;">{{ "%.1f"|format(student.average_marks) }}</td>
+                        <td style="font-weight: bold;">{{ student.Grade }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="chart-section" style="margin: 20px 0; text-align: center;">
+            <h3>Subject Performance Chart</h3>
+            <canvas id="scoreChart" width="400" height="200"></canvas>
+        </div>
+
+        <div class="behavioral-assessment">
+            <div class="table-title">Behavioral Assessment</div>
+            <table style="margin-bottom: 20px;">
+                <thead>
+                    <tr>
+                        <th style="width: 70%;">Attribute</th>
+                        <th style="width: 30%;">Grade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="text-align: left; font-weight: bold;">Neatness</td>
+                        <td>________</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left; font-weight: bold;">Punctuality</td>
+                        <td>________</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left; font-weight: bold;">Attendance</td>
+                        <td>________</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left; font-weight: bold;">Attitude to Work</td>
+                        <td>________</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left; font-weight: bold;">Attitude to Teachers</td>
+                        <td>________</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left; font-weight: bold;">Relationship with Peers</td>
+                        <td>________</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left; font-weight: bold;">Leadership Qualities</td>
+                        <td>________</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left; font-weight: bold;">Self Control</td>
+                        <td>________</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="teacher-comment">
+            <div class="comment-title">Teacher's Comment</div>
+            <div style="min-height: 60px; line-height: 1.5;">
+                {% if student.average_marks >= 70 %}
+                    Excellent performance! {{ student.first_name }} has shown outstanding academic ability and consistent effort throughout the term. Keep up the great work!
+                {% elif student.average_marks >= 60 %}
+                    Very good performance! {{ student.first_name }} has demonstrated good understanding of the subjects. With continued effort, even greater achievements are possible.
+                {% elif student.average_marks >= 50 %}
+                    Good performance with room for improvement. {{ student.first_name }} should focus on weak areas and seek additional help when needed.
+                {% elif student.average_marks >= 40 %}
+                    Satisfactory performance. {{ student.first_name }} needs to work harder to improve understanding and performance in all subjects.
+                {% else %}
+                    Below average performance. {{ student.first_name }} requires significant improvement and additional support to meet academic standards.
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="signatures">
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <div class="signature-title">Class Teacher</div>
+            </div>
+
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <div class="signature-title">Principal</div>
+            </div>
+
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <div class="signature-title">Parent/Guardian</div>
+            </div>
+        </div>
+
+        <div style="text-align: center; padding: 15px; background: #f8f9fa; border-top: 1px solid #dee2e6; font-size: 12px; color: #666;">
+            Report Generated on {{ now.strftime('%B %d, %Y') if now else 'N/A' }}
+        </div>
     </div>
 
-    {% if position %}
-        <div style="margin-top:6px;font-weight:600;">Position: {{ position.pos }} out of {{ position.size }} in class {{ position.class }}</div>
-    {% endif %}
+    <div class="back-link">
+        <a href="{{ url_for('view_students') }}">← Back to Students List</a>
+    </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Subject</th>
-                <th>Test 1 /10</th>
-                <th>Test 2 /10</th>
-                <th>Test 3 /10</th>
-                <th>Total Tests /30</th>
-                <th>CBT /30</th>
-                <th>Theory /40</th>
-                <th>Total Exam /70</th>
-                <th>Overall Mark /100</th>
-                <th>Grade</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for subject, s in student.subjects.items() %}
-            {% set tests = s.get('tests', []) %}
-            <tr>
-                <td>{{ subject }}</td>
-                <td>{{ tests[0] if tests|length > 0 else s.get('first_test', '') }}</td>
-                <td>{{ tests[1] if tests|length > 1 else s.get('second_test', '') }}</td>
-                <td>{{ tests[2] if tests|length > 2 else s.get('third_test', '') }}</td>
-                <td>{{ s.get('total_test', '') }}</td>
-                <td>{{ s.get('objective', '') }}</td>
-                <td>{{ s.get('theory', '') }}</td>
-                <td>{{ s.get('total_exam', '') }}</td>
-                <td>{{ s.get('overall_mark', '') }}</td>
-                <td>{{ s.get('grade', '') }}</td>
-                <td>{{ student.Status }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-        <tfoot>
-            <tr>
-                <th colspan="8" class="right">Average per subject</th>
-                <th>{{ student.average_marks }}</th>
-                <th>{{ student.Grade }}</th>
-                <th>{{ student.Status }}</th>
-            </tr>
-        </tfoot>
-    </table>
-
-    <p class="right"><a href="{{ url_for('view_students') }}">Back to students</a></p>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('scoreChart').getContext('2d');
+        const subjects = {{ chart_labels | tojson }};
+        const scores = {{ chart_data | tojson }};
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: subjects,
+                datasets: [{
+                    label: 'Overall Marks',
+                    data: scores,
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 </html>

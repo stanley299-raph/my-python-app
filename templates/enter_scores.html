@@ -7,166 +7,277 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
         .progress-indicator {
             display: flex;
             justify-content: center;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
         .step {
             display: flex;
             align-items: center;
-            gap: 10px;
-            color: #7f8c8d;
+            gap: 12px;
+            color: #6c757d;
+            font-weight: 500;
         }
         .step.completed {
-            color: #27ae60;
+            color: #28a745;
         }
         .step.active {
-            color: #3498db;
-            font-weight: 600;
+            color: #007bff;
+            font-weight: 700;
         }
         .step i {
-            font-size: 1.2rem;
+            font-size: 1.4rem;
+            padding: 8px;
+            border-radius: 50%;
+            background: #f8f9fa;
+        }
+        .step.completed i {
+            background: #28a745;
+            color: white;
+        }
+        .step.active i {
+            background: #007bff;
+            color: white;
         }
         .step::after {
             content: '';
-            width: 50px;
-            height: 2px;
-            background: #ecf0f1;
-            margin-left: 10px;
+            width: 60px;
+            height: 3px;
+            background: #e9ecef;
+            margin-left: 12px;
+            border-radius: 2px;
         }
         .step:last-child::after {
             display: none;
         }
         .step.completed::after {
-            background: #27ae60;
+            background: #28a745;
         }
         .step.active::after {
-            background: #3498db;
+            background: #007bff;
         }
         .score-table {
-            margin-bottom: 30px;
-            border-radius: 10px;
+            margin-bottom: 40px;
+            border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            background: white;
         }
         .score-table th {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            font-weight: 600;
+            font-weight: 700;
             text-transform: uppercase;
-            font-size: 12px;
-            letter-spacing: 0.5px;
-            padding: 15px 8px;
+            font-size: 11px;
+            letter-spacing: 1px;
+            padding: 18px 10px;
+            border: none;
         }
         .score-table td {
-            padding: 12px 8px;
+            padding: 16px 10px;
             text-align: center;
+            border-bottom: 1px solid #f1f3f4;
         }
         .score-table tbody tr:nth-child(even) {
-            background: #f8f9fa;
+            background: #fafbfc;
         }
         .score-table tbody tr:hover {
-            background: #e8f4fd;
+            background: #f0f8ff;
+            transform: scale(1.01);
+            transition: all 0.2s ease;
         }
         .subject-name {
-            font-weight: 600;
-            color: #2c3e50;
+            font-weight: 700;
+            color: #2d3748;
             text-align: left;
-            padding-left: 15px;
+            padding-left: 20px;
+            font-size: 15px;
         }
         .input-field {
             width: 100%;
-            padding: 8px;
-            border: 2px solid #e1e8ed;
-            border-radius: 6px;
+            padding: 10px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
             font-size: 14px;
+            font-weight: 600;
             transition: all 0.3s ease;
             text-align: center;
+            background: white;
         }
         .input-field:focus {
             outline: none;
-            border-color: #3498db;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+            transform: translateY(-1px);
         }
         .input-field[readonly] {
-            background: #f8f9fa;
-            color: #2c3e50;
-            font-weight: 600;
+            background: #f7fafc;
+            color: #2d3748;
+            font-weight: 700;
             cursor: not-allowed;
+            border-color: #e2e8f0;
         }
         .calculated-field {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            background: linear-gradient(135deg, #a855f7, #ec4899);
             color: white;
-            font-weight: bold;
+            font-weight: 800;
+            border: none;
+            box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);
         }
         .grade-field {
-            font-weight: bold;
+            font-weight: 800;
             font-size: 16px;
+            border-radius: 6px;
+            padding: 8px 12px;
         }
-        .grade-A { background: linear-gradient(135deg, #27ae60, #2ecc71); }
-        .grade-B { background: linear-gradient(135deg, #3498db, #2980b9); }
-        .grade-C { background: linear-gradient(135deg, #f39c12, #e67e22); }
-        .grade-D { background: linear-gradient(135deg, #e74c3c, #c0392b); }
-        .grade-F { background: linear-gradient(135deg, #95a5a6, #7f8c8d); }
+        .grade-A { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+        .grade-B { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
+        .grade-C { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+        .grade-D { background: linear-gradient(135deg, #f97316, #ea580c); color: white; }
+        .grade-F { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
         .summary-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 30px;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 40px;
             text-align: center;
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.2);
+        }
+        .summary-card h3 {
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-weight: 700;
         }
         .summary-stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
         }
         .stat-item {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            padding: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 15px;
             backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         .stat-number {
-            font-size: 1.5rem;
-            font-weight: bold;
+            font-size: 1.8rem;
+            font-weight: 800;
             display: block;
+            margin-bottom: 5px;
         }
         .stat-label {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             opacity: 0.9;
+            font-weight: 500;
         }
         .validation-message {
             display: none;
-            padding: 8px;
-            margin-top: 5px;
-            border-radius: 4px;
-            font-size: 12px;
+            padding: 6px 8px;
+            margin-top: 6px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
             text-align: center;
         }
         .validation-error {
-            background: #fee;
-            color: #e74c3c;
-            border: 1px solid #f8d7da;
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
         }
         .validation-success {
-            background: #efe;
-            color: #27ae60;
-            border: 1px solid #d4edda;
+            background: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        .info-notice {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 1px solid #f59e0b;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 30px;
+            text-align: center;
+            color: #92400e;
+        }
+        .info-notice i {
+            color: #f59e0b;
+            margin-right: 8px;
         }
         @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
             .score-table {
                 font-size: 12px;
             }
             .score-table th,
             .score-table td {
-                padding: 8px 4px;
+                padding: 10px 6px;
             }
             .input-field {
-                padding: 6px;
-                font-size: 12px;
+                padding: 8px 10px;
+                font-size: 13px;
+            }
+            .summary-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
             }
         }
     </style>
@@ -226,23 +337,21 @@
                 <table>
                     <thead>
                         <tr>
-                            <th style="text-align: left; width: 15%;">Subject</th>
-                            <th colspan="5" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">Test Scores (30%)</th>
-                            <th colspan="3" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">Exam Scores (70%)</th>
-                            <th colspan="2" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">Final Results</th>
+                            <th rowspan="2" style="text-align: left; width: 18%;">Subject</th>
+                            <th colspan="6" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">Continuous Assessment (30%)</th>
+                            <th colspan="4" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">Examination (70%)</th>
                         </tr>
                         <tr>
-                            <th></th>
-                            <th>First<br/>(10)</th>
-                            <th>Second<br/>(10)</th>
-                            <th>Third<br/>(10)</th>
+                            <th>Test 1<br/>(10)</th>
+                            <th>Test 2<br/>(10)</th>
+                            <th>Test 3<br/>(10)</th>
                             <th>Total<br/>(30)</th>
                             <th>Grade</th>
-                            <th>Obj.<br/>(30)</th>
+                            <th>Position</th>
+                            <th>Objective<br/>(30)</th>
                             <th>Theory<br/>(40)</th>
                             <th>Total<br/>(70)</th>
                             <th>Overall<br/>(100)</th>
-                            <th>Grade</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -250,15 +359,15 @@
                         <tr data-subject="{{ subject | replace(' ', '_') }}">
                             <td class="subject-name">{{ subject }}</td>
                             <td>
-                                <input type="number" class="input-field test-input" name="first_test_{{ subject | replace(' ', '_') }}" min="0" max="10" step="0.1" required>
+                                <input type="number" class="input-field test-input" name="first_test_{{ subject | replace(' ', '_') }}" min="0" max="10" step="0.1" required placeholder="0.0">
                                 <div class="validation-message"></div>
                             </td>
                             <td>
-                                <input type="number" class="input-field test-input" name="second_test_{{ subject | replace(' ', '_') }}" min="0" max="10" step="0.1" required>
+                                <input type="number" class="input-field test-input" name="second_test_{{ subject | replace(' ', '_') }}" min="0" max="10" step="0.1" required placeholder="0.0">
                                 <div class="validation-message"></div>
                             </td>
                             <td>
-                                <input type="number" class="input-field test-input" name="third_test_{{ subject | replace(' ', '_') }}" min="0" max="10" step="0.1" required>
+                                <input type="number" class="input-field test-input" name="third_test_{{ subject | replace(' ', '_') }}" min="0" max="10" step="0.1" required placeholder="0.0">
                                 <div class="validation-message"></div>
                             </td>
                             <td>
@@ -268,11 +377,14 @@
                                 <input type="text" class="input-field grade-field" name="test_grade_{{ subject | replace(' ', '_') }}" readonly>
                             </td>
                             <td>
-                                <input type="number" class="input-field exam-input" name="objective_{{ subject | replace(' ', '_') }}" min="0" max="30" step="0.1" required>
+                                <input type="number" class="input-field" name="position_{{ subject | replace(' ', '_') }}" min="1" max="50" placeholder="Rank">
+                            </td>
+                            <td>
+                                <input type="number" class="input-field exam-input" name="objective_{{ subject | replace(' ', '_') }}" min="0" max="30" step="0.1" required placeholder="0.0">
                                 <div class="validation-message"></div>
                             </td>
                             <td>
-                                <input type="number" class="input-field exam-input" name="theory_{{ subject | replace(' ', '_') }}" min="0" max="40" step="0.1" required>
+                                <input type="number" class="input-field exam-input" name="theory_{{ subject | replace(' ', '_') }}" min="0" max="40" step="0.1" required placeholder="0.0">
                                 <div class="validation-message"></div>
                             </td>
                             <td>
@@ -281,11 +393,19 @@
                             <td>
                                 <input type="number" class="input-field calculated-field" name="overall_mark_{{ subject | replace(' ', '_') }}" readonly>
                             </td>
-                            <td>
-                                <input type="text" class="input-field grade-field" name="grade_{{ subject | replace(' ', '_') }}" readonly>
-                            </td>
                         </tr>
                         {% endfor %}
+                        <!-- Summary Row -->
+                        <tr class="summary-row">
+                            <td class="subject-name" style="font-weight: 700; background: linear-gradient(135deg, #667eea, #764ba2); color: white;">OVERALL AVERAGE</td>
+                            <td colspan="3" style="text-align: center; font-weight: 700; background: #f8f9fa;">Average Scores</td>
+                            <td style="font-weight: 700; background: linear-gradient(135deg, #f093fb, #f5576c); color: white;" id="avg-test-total">-</td>
+                            <td style="font-weight: 700; background: linear-gradient(135deg, #f093fb, #f5576c); color: white;" id="avg-test-grade">-</td>
+                            <td style="background: #f8f9fa;">-</td>
+                            <td colspan="2" style="text-align: center; font-weight: 700; background: #f8f9fa;">Average Scores</td>
+                            <td style="font-weight: 700; background: linear-gradient(135deg, #4facfe, #00f2fe); color: white;" id="avg-exam-total">-</td>
+                            <td style="font-weight: 700; background: linear-gradient(135deg, #43e97b, #38f9d7); color: white;" id="avg-overall">-</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
